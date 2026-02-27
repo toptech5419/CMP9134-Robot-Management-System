@@ -21,42 +21,40 @@ sequenceDiagram
     else Input valid
         UI->>API: POST /api/command {x: 5, y: 10, token: JWT}
         activate API
-
         API->>Auth: validateToken(JWT)
-        Auth-->>API: User {role: COMMANDER}
+        Auth->>API: User {role: COMMANDER}
 
         alt Token invalid
             API-->>UI: 401 Unauthorized
             UI-->>C: Display "Session expired, please log in"
         else Token valid, Role is VIEWER
+            API->>DB: INSERT log (user, MOVE, REJECTED_ROLE, timestamp)
             API-->>UI: 403 Forbidden
             UI-->>C: Display "Insufficient permissions"
-            API->>DB: INSERT log (user, MOVE, REJECTED_ROLE, timestamp)
         else Token valid, Role is COMMANDER
             API->>Sim: POST /api/move {x: 5, y: 10}
-            Sim-->>API: Response
+            Sim->>API: Response
 
             alt Robot API responds 200 OK
                 API->>DB: INSERT log (user, MOVE, SUCCESS, timestamp)
-                DB-->>API: Log saved
-                API-->>UI: 200 OK {message: "Navigating to (5, 10)"}
+                DB->>API: Log saved
+                API-->>UI: 200 OK "Navigating to (5, 10)"
                 UI-->>C: Update grid, show robot moving to (5, 10)
             else Robot API unreachable
                 API->>API: Retry with backoff (max 3 attempts)
                 alt Retry succeeds
                     API->>Sim: POST /api/move {x: 5, y: 10}
-                    Sim-->>API: 200 OK
+                    Sim->>API: 200 OK
                     API->>DB: INSERT log (user, MOVE, SUCCESS_AFTER_RETRY, timestamp)
                     API-->>UI: 200 OK
                     UI-->>C: Update grid, show robot moving
                 else Max retries exceeded
                     API->>DB: INSERT log (user, MOVE, CONNECTION_FAILED, timestamp)
                     API-->>UI: 503 Service Unavailable
-                    UI-->>C: Display "Signal Lost — Reconnecting..."
+                    UI-->>C: Display "Signal Lost - Reconnecting..."
                 end
             end
         end
-
         deactivate API
     end
 ```
