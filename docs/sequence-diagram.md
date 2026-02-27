@@ -23,50 +23,36 @@ sequenceDiagram
         activate API
 
         API->>Auth: validateToken(JWT)
-        activate Auth
+        Auth-->>API: User {role: COMMANDER}
 
         alt Token invalid
-            Auth-->>API: 401 Unauthorized
-            deactivate Auth
             API-->>UI: 401 Unauthorized
             UI-->>C: Display "Session expired, please log in"
-        else Token valid
-            Auth-->>API: User {role: COMMANDER}
-            deactivate Auth
+        else Token valid, Role is VIEWER
+            API-->>UI: 403 Forbidden
+            UI-->>C: Display "Insufficient permissions"
+            API->>DB: INSERT log (user, MOVE, REJECTED_ROLE, timestamp)
+        else Token valid, Role is COMMANDER
+            API->>Sim: POST /api/move {x: 5, y: 10}
+            Sim-->>API: Response
 
-            alt Role is VIEWER
-                API-->>UI: 403 Forbidden
-                UI-->>C: Display "Insufficient permissions"
-                API->>DB: INSERT log (user, MOVE, REJECTED_ROLE, timestamp)
-            else Role is COMMANDER
-                API->>Sim: POST /api/move {x: 5, y: 10}
-                activate Sim
-
-                alt Robot API responds
-                    Sim-->>API: 200 OK {message: "Navigating to (5, 10)"}
-                    deactivate Sim
-                    API->>DB: INSERT log (user, MOVE, SUCCESS, timestamp)
-                    activate DB
-                    DB-->>API: Log saved
-                    deactivate DB
-                    API-->>UI: 200 OK {message: "Navigating to (5, 10)"}
-                    UI-->>C: Update grid, show robot moving to (5, 10)
-                else Robot API unreachable
-                    Sim-->>API: Connection timeout
-                    deactivate Sim
-                    API->>API: Retry with backoff (max 3 attempts)
-
-                    alt Retry succeeds
-                        API->>Sim: POST /api/move {x: 5, y: 10}
-                        Sim-->>API: 200 OK
-                        API->>DB: INSERT log (user, MOVE, SUCCESS_AFTER_RETRY, timestamp)
-                        API-->>UI: 200 OK
-                        UI-->>C: Update grid, show robot moving
-                    else Max retries exceeded
-                        API->>DB: INSERT log (user, MOVE, CONNECTION_FAILED, timestamp)
-                        API-->>UI: 503 Service Unavailable
-                        UI-->>C: Display "Signal Lost — Reconnecting..."
-                    end
+            alt Robot API responds 200 OK
+                API->>DB: INSERT log (user, MOVE, SUCCESS, timestamp)
+                DB-->>API: Log saved
+                API-->>UI: 200 OK {message: "Navigating to (5, 10)"}
+                UI-->>C: Update grid, show robot moving to (5, 10)
+            else Robot API unreachable
+                API->>API: Retry with backoff (max 3 attempts)
+                alt Retry succeeds
+                    API->>Sim: POST /api/move {x: 5, y: 10}
+                    Sim-->>API: 200 OK
+                    API->>DB: INSERT log (user, MOVE, SUCCESS_AFTER_RETRY, timestamp)
+                    API-->>UI: 200 OK
+                    UI-->>C: Update grid, show robot moving
+                else Max retries exceeded
+                    API->>DB: INSERT log (user, MOVE, CONNECTION_FAILED, timestamp)
+                    API-->>UI: 503 Service Unavailable
+                    UI-->>C: Display "Signal Lost — Reconnecting..."
                 end
             end
         end
