@@ -87,3 +87,31 @@
 ## Conclusion
 
 The AI evaluation identified 6 issues, 3 of which (Issues 1, 2, 3) were directly actionable and have been fixed in the updated wireframe. The remaining issues were either already addressed (Issues 4, 6) or appropriately de-scoped (Issue 5 partial). The wireframe now more closely follows all 8 of Shneiderman's Golden Rules and all 7 of Norman's principles.
+
+---
+
+## Iteration 2 — AI Re-evaluation (HTML file shared directly)
+
+A second AI evaluation was conducted after sharing the actual `wireframes/dashboard-wireframe.html` file. Because the AI could read specific CSS classes and HTML structure, the feedback was more precise.
+
+### New Issues Identified
+
+| # | Issue | Severity | Status |
+|---|---|---|---|
+| 1 | Command lifecycle (`cmd-lifecycle`) nested only in Move panel — not globally visible | Critical | → Implemented in Task 3 prototype |
+| 2 | E-STOP single-click risk — needs long-press protection (1.5s hold) | Major/Critical | → Implemented in Task 3 prototype |
+| 3 | Grid map has no robot heading arrow; no click-to-target affordance | Major | Partially addressed (axis labels done; heading arrow in Task 3) |
+| 4 | No `aria-live` on dynamic regions — screen readers not informed | Medium | → Implemented in Task 3 prototype |
+| 5 | Role chip tooltip missing — viewers don't know why controls are absent | Medium | → Implemented in Task 3 prototype |
+| 6 | Error recovery: no explicit safe default stated ("robot will hold position") | Medium | → Addressed in signal-lost banner (Task 3) |
+
+### Code Snippets Provided by AI (Saved for Task 3)
+
+See `docs/task3-code-reference.md` for the 3 copy-paste ready snippets:
+1. Global command status `aria-live` region
+2. E-STOP long-press JS (1.5s hold detection with `mousedown`/`touchstart`)
+3. Global command feed `<ul aria-live="polite">`
+
+### Decision
+
+All 6 new issues are implementation-level concerns (JS behaviour, ARIA attributes) — not wireframe layout issues. They are addressed in the Task 3 interactive prototype (`client/index.html`) rather than in the wireframe.

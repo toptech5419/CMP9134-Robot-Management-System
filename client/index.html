@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RMS Ground Control Station</title>
+  <!-- Bootstrap 5.3 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════
+       CUSTOM STYLES — Robot Management System GCS
+       Limited Functionality Simulation (Task 3 — Week 6)
+    ══════════════════════════════════════════════════ */
+
+    /* ── Persistent status bar ── */
+    #status-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1050;
+      background: #0a0a0f;
+      border-bottom: 1px solid #2a2a3e;
+      padding: 5px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 11px;
+    }
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: #13131f;
+      border: 1px solid #2a2a3e;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .sb-label { color: #666; font-size: 10px; }
+    .sb-val   { font-weight: 600; font-size: 11px; }
+
+    /* ── E-STOP button ── */
+    #estop-btn {
+      margin-left: auto;
+      font-weight: bold;
+      font-size: 12px;
+      border-width: 2px;
+      padding: 4px 18px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    #estop-btn.pressing::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0;
+      height: 100%;
+      background: rgba(255,255,255,0.25);
+      animation: estop-fill 1.5s linear forwards;
+    }
+    @keyframes estop-fill { from { width: 0; } to { width: 100%; } }
+
+    /* ── E-STOP overlay ── */
+    #estop-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(150, 0, 0, 0.97);
+      z-index: 9999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    /* ── Login screen ── */
+    #screen-login {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #07070f;
+    }
+
+    /* ── Canvas map ── */
+    #robot-map {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+    }
+
+    /* ── Command lifecycle stages ── */
+    .cmd-stage {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background: #1e1e2e;
+      border: 1px solid #333;
+      color: #666;
+      transition: all 0.3s ease;
+    }
+    .cmd-stage.active   { background: #0d6efd; border-color: #0d6efd; color: #fff; font-weight: bold; }
+    .cmd-stage.done     { background: #198754; border-color: #198754; color: #fff; }
+    .cmd-stage.failed   { background: #dc3545; border-color: #dc3545; color: #fff; }
+
+    /* ── Audit log row animation ── */
+    @keyframes fadeInRow {
+      from { background-color: rgba(13,110,253,0.25); }
+      to   { background-color: transparent; }
+    }
+    .log-new { animation: fadeInRow 1.2s ease; }
+
+    /* ── Keyboard focus ring ── */
+    :focus-visible { outline: 2px solid #0d6efd; outline-offset: 2px; }
+
+    /* ── Map legend ── */
+    .map-legend { display: flex; gap: 14px; font-size: 10px; color: #666; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     SCREEN 1 — LOGIN
+═══════════════════════════════════ -->
+<div id="screen-login">
+  <div style="width:360px;">
+    <div class="card shadow-lg">
+      <div class="card-body p-4">
+
+        <div class="text-center mb-4">
+          <div style="font-size:2.2em; margin-bottom:8px;">⬛</div>
+          <h5 class="mb-0 fw-bold">RMS Ground Control Station</h5>
+          <small class="text-muted">Robot Management System — v1.0 (Prototype)</small>
+        </div>
+
+        <div id="login-error" class="alert alert-danger d-none py-2" role="alert" aria-live="polite"></div>
+
+        <div class="mb-3">
+          <label for="login-username" class="form-label">Username</label>
+          <input type="text" class="form-control" id="login-username"
+                 placeholder="Enter username" autocomplete="username">
+        </div>
+
+        <div class="mb-3">
+          <label for="login-password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="login-password"
+                 placeholder="Enter password" autocomplete="current-password">
+          <div class="form-text">Demo mode: any password accepted</div>
+        </div>
+
+        <div class="mb-4">
+          <label for="login-role" class="form-label">
+            Role <span class="badge bg-secondary ms-1" style="font-size:10px;">Demo selector</span>
+          </label>
+          <select class="form-select" id="login-role">
+            <option value="COMMANDER">Commander — Full Control</option>
+            <option value="VIEWER">Viewer — Read Only</option>
+            <option value="AUDITOR">Auditor — Logs Only</option>
+          </select>
+          <div class="form-text">In production: role is assigned by admin at registration</div>
+        </div>
+
+        <button class="btn btn-primary w-100 fw-bold" onclick="handleLogin()" id="login-btn">
+          Login
+        </button>
+
+      </div>
+    </div>
+    <p class="text-center text-muted mt-3" style="font-size:10px;">
+      CMP9134 Software Engineering — Assessment 1 &nbsp;|&nbsp;
+      Limited Functionality Simulation — no real backend connected
+    </p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════
+     SCREEN 2 — DASHBOARD
+═══════════════════════════════════ -->
+<div id="screen-dashboard" style="display:none;">
+
+  <!-- ── Persistent status bar ── -->
+  <div id="status-bar" role="banner" aria-label="System status bar">
+    <div class="sb-item" id="sb-conn-item" title="Robot API connection status">
+      <span class="sb-label">Connection</span>
+      <span class="sb-val" id="sb-conn-val">● Connected</span>
+    </div>
+    <div class="sb-item">
+      <span class="sb-label">RTT</span>
+      <span class="sb-val" id="sb-rtt-val">42ms</span>
+    </div>
+    <div class="sb-item">
+      <span class="sb-label">Battery</span>
+      <span class="sb-val" id="sb-bat-val">72%</span>
+    </div>
+    <div class="sb-item">
+      <span class="sb-label">Robot</span>
+      <span class="sb-val" id="sb-robot-val">IDLE</span>
+    </div>
+    <div class="sb-item">
+      <span class="sb-label">Role</span>
+      <span class="sb-val" id="sb-role-val">COMMANDER</span>
+    </div>
+    <!-- Global command status (aria-live — AI feedback Snippet 1) -->
+    <div class="sb-item" id="global-cmd-status"
+         aria-live="polite" aria-atomic="true"
+         style="flex:1; min-width:180px; max-width:340px;">
+      <span class="sb-label">Last Cmd</span>
+      <span class="sb-val text-truncate" id="global-cmd-text">No commands issued</span>
+    </div>
+    <!-- E-STOP (AI feedback Snippet 2: long-press) -->
+    <button id="estop-btn" class="btn btn-danger ms-auto"
+            aria-label="Emergency Stop — hold 1.5 seconds to activate"
+            title="Hold for 1.5s to activate Emergency Stop">
+      ⛔ E-STOP
+    </button>
+  </div>
+
+  <!-- Signal Lost Banner -->
+  <div id="banner-signal" class="alert alert-warning rounded-0 mb-0 d-none py-2 text-center"
+       role="alert" aria-live="assertive" style="font-size:12px;">
+    <strong>⚠ SIGNAL LOST</strong> — Robot API unreachable.
+    Last known position: (<span id="banner-x">10</span>, <span id="banner-y">7</span>).
+    Robot will <strong>hold position</strong>.
+    <button class="btn btn-sm btn-outline-warning ms-3" onclick="simulateReconnect()">Reconnect Now</button>
+  </div>
+
+  <!-- Low Battery Banner -->
+  <div id="banner-battery" class="alert alert-danger rounded-0 mb-0 d-none py-2 text-center"
+       role="alert" aria-live="assertive" style="font-size:12px;">
+    <strong>⚠ LOW BATTERY</strong> — Battery at <span id="banner-bat-pct">14</span>%.
+    Return to base recommended.
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar bg-body-secondary px-3 py-1 border-bottom border-secondary">
+    <span class="navbar-brand fw-bold mb-0" style="font-size:15px;">⬛ RMS GCS</span>
+    <div class="d-flex align-items-center gap-3">
+      <small class="text-muted" id="nav-user-info"></small>
+      <button class="btn btn-outline-secondary btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </nav>
+
+  <!-- Main 3-column grid -->
+  <div class="container-fluid p-3">
+    <div class="row g-3">
+
+      <!-- ── LEFT: Status ── -->
+      <div class="col-lg-3 col-md-4">
+
+        <!-- Robot Status Card -->
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <span class="fw-semibold" style="font-size:13px;">Robot Status</span>
+            <span class="badge bg-secondary" id="robot-badge">IDLE</span>
+          </div>
+          <div class="card-body p-3" style="font-size:12px;">
+            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+              <span class="text-muted">X Position</span>
+              <span class="fw-bold" id="stat-x">10</span>
+            </div>
+            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+              <span class="text-muted">Y Position</span>
+              <span class="fw-bold" id="stat-y">7</span>
+            </div>
+            <div class="d-flex justify-content-between py-1 border-bottom border-secondary">
+              <span class="text-muted">Status</span>
+              <span class="fw-bold" id="stat-status">IDLE</span>
+            </div>
+            <div class="pt-2">
+              <div class="d-flex justify-content-between mb-1">
+                <span class="text-muted">Battery</span>
+                <span class="fw-bold" id="stat-battery">72%</span>
+              </div>
+              <div class="progress" style="height:7px;" aria-label="Battery level">
+                <div class="progress-bar bg-success" id="bat-bar" role="progressbar"
+                     style="width:72%" aria-valuenow="72" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connection Card -->
+        <div class="card mb-3">
+          <div class="card-body py-2 px-3" style="font-size:12px;">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">API</span><code style="font-size:10px;">localhost:5000</code>
+            </div>
+            <div class="d-flex justify-content-between mt-1">
+              <span class="text-muted">Status</span>
+              <span id="conn-text" class="text-success fw-bold">● Connected</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active User Card -->
+        <div class="card mb-3">
+          <div class="card-body text-center py-2 px-3" style="font-size:12px;">
+            <div class="fw-bold" id="user-display">—</div>
+            <span class="badge bg-primary mt-1" id="role-badge">COMMANDER</span>
+          </div>
+        </div>
+
+        <!-- Demo Controls (prototype-only) -->
+        <div class="card border-secondary">
+          <div class="card-header py-1 px-3" style="font-size:10px; color:#666;">
+            Demo Controls <span class="badge bg-secondary" style="font-size:9px;">Prototype only</span>
+          </div>
+          <div class="card-body p-2 d-flex flex-column gap-2">
+            <button class="btn btn-outline-warning btn-sm" onclick="simulateDisconnect()">Simulate Disconnect</button>
+            <button class="btn btn-outline-danger btn-sm"  onclick="simulateLowBattery()">Simulate Low Battery</button>
+            <button class="btn btn-outline-warning btn-sm" onclick="simulateStuck()">Simulate STUCK</button>
+            <button class="btn btn-outline-success btn-sm" onclick="simulateReconnect()">Reconnect</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── CENTER: Map + Log ── -->
+      <div class="col-lg-6 col-md-8">
+
+        <!-- Map Card -->
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <span class="fw-semibold" style="font-size:13px;">2D Grid Map — 21 × 21</span>
+            <small class="text-muted">Units: grid cells (0–20)</small>
+          </div>
+          <div class="card-body p-2">
+            <canvas id="robot-map" width="480" height="480"></canvas>
+            <div class="map-legend">
+              <span>● Robot</span>
+              <span>◎ Target (pending move)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Log Card -->
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center py-2">
+            <span class="fw-semibold" style="font-size:13px;">Mission Audit Log</span>
+            <small class="text-muted" id="log-count">0 entries</small>
+          </div>
+          <div class="card-body p-0" style="max-height:190px; overflow-y:auto;">
+            <table class="table table-sm table-striped table-hover mb-0" style="font-size:11px;">
+              <thead style="position:sticky; top:0; background:var(--bs-body-bg);">
+                <tr><th>Time</th><th>User</th><th>Action</th><th>Payload</th><th>Result</th></tr>
+              </thead>
+              <tbody id="log-tbody">
+                <tr><td colspan="5" class="text-center text-muted py-3">No commands yet</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── RIGHT: Controls ── -->
+      <div class="col-lg-3 col-md-12">
+
+        <!-- COMMANDER PANEL -->
+        <div id="commander-panel">
+
+          <div class="card mb-3">
+            <div class="card-header py-2">
+              <span class="fw-semibold" style="font-size:13px;">Move Robot</span>
+            </div>
+            <div class="card-body p-3">
+
+              <!-- Connected controls -->
+              <div id="move-controls">
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <label for="move-x" class="form-label" style="font-size:11px;">X (0–20)</label>
+                    <input type="number" class="form-control form-control-sm" id="move-x"
+                           min="0" max="20" placeholder="0–20" aria-label="Target X coordinate">
+                  </div>
+                  <div class="col-6">
+                    <label for="move-y" class="form-label" style="font-size:11px;">Y (0–20)</label>
+                    <input type="number" class="form-control form-control-sm" id="move-y"
+                           min="0" max="20" placeholder="0–20" aria-label="Target Y coordinate">
+                  </div>
+                </div>
+
+                <button class="btn btn-primary w-100 fw-bold mb-2" id="move-btn"
+                        onclick="handleMove()" aria-label="Send move command to robot">
+                  ▶ MOVE
+                </button>
+
+                <!-- Command lifecycle (AI Snippet 3 adapted) -->
+                <div id="lifecycle-wrap" style="display:none;">
+                  <div class="d-flex gap-1 mb-2 flex-wrap">
+                    <span class="cmd-stage" id="s-queued">Queued</span>
+                    <span class="cmd-stage" id="s-accepted">Accepted</span>
+                    <span class="cmd-stage" id="s-executing">Executing</span>
+                    <span class="cmd-stage" id="s-complete">Complete</span>
+                  </div>
+                  <div id="lifecycle-text" class="text-muted" style="font-size:10px;"></div>
+                </div>
+
+                <!-- Validation error -->
+                <div id="move-error" class="alert alert-danger d-none py-1 px-2 mt-2"
+                     role="alert" aria-live="polite" style="font-size:11px;"></div>
+              </div>
+
+              <!-- Disconnected message -->
+              <div id="move-disc-msg" class="d-none text-center py-2" role="status" aria-live="polite" style="font-size:11px;">
+                <span class="text-warning">⚠ Controls disabled</span><br>
+                <small class="text-muted">Robot unreachable.<br>
+                Last known: (<span id="disc-x">10</span>, <span id="disc-y">7</span>)</small>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card mb-3">
+            <div class="card-header py-2">
+              <span class="fw-semibold" style="font-size:13px;">Quick Actions</span>
+            </div>
+            <div class="card-body p-3 d-flex flex-column gap-2">
+              <button class="btn btn-outline-secondary btn-sm" id="reset-btn" onclick="handleReset()">
+                ↺ Reset Robot
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" id="refresh-btn" onclick="handleRefresh()">
+                📡 Refresh Status
+              </button>
+            </div>
+          </div>
+
+          <div class="card border-secondary">
+            <div class="card-body py-2 px-3 text-center">
+              <small class="text-muted" style="font-size:10px;">
+                ⛔ E-STOP is in the status bar above<br>
+                Hold 1.5s to activate — immediate, no confirmation
+              </small>
+            </div>
+          </div>
+
+        </div><!-- end commander-panel -->
+
+        <!-- VIEWER PANEL -->
+        <div id="viewer-panel" style="display:none;">
+          <div class="card border-warning">
+            <div class="card-body text-center p-4">
+              <div style="font-size:2.2em; margin-bottom:10px;">🔒</div>
+              <h6 class="fw-bold">READ-ONLY MODE</h6>
+              <p class="text-muted mb-2" style="font-size:12px;">
+                You do not have permission to send commands to the robot.
+              </p>
+              <p class="text-muted" style="font-size:11px;">
+                Contact an admin to upgrade your role to Commander.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- AUDITOR PANEL -->
+        <div id="auditor-panel" style="display:none;">
+          <div class="card border-info">
+            <div class="card-body text-center p-4">
+              <div style="font-size:2.2em; margin-bottom:10px;">📋</div>
+              <h6 class="fw-bold">AUDITOR VIEW</h6>
+              <p class="text-muted mb-2" style="font-size:12px;">
+                Read-only access to mission logs and system status.
+              </p>
+              <button class="btn btn-outline-info btn-sm" onclick="showToast('info','CSV export not connected in prototype')">
+                ⬇ Export Logs (CSV)
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- end screen-dashboard -->
+
+
+<!-- ═══════════════════════════════════
+     E-STOP OVERLAY
+═══════════════════════════════════ -->
+<div id="estop-overlay" role="alertdialog" aria-modal="true" aria-live="assertive"
+     aria-labelledby="estop-title">
+  <div style="max-width:480px; padding:40px;">
+    <div style="font-size:3.5em; margin-bottom:16px;">⛔</div>
+    <h1 id="estop-title" style="color:#fff; font-size:1.8em; margin-bottom:12px;">
+      EMERGENCY STOP
+    </h1>
+    <p style="color:#ffcccc; font-size:1em; margin-bottom:6px;">
+      All robot motion halted immediately.
+    </p>
+    <p style="color:#ffaaaa; font-size:0.85em; margin-bottom:24px;" id="estop-ts"></p>
+    <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:16px; margin-bottom:24px; text-align:left;">
+      <p style="color:#ffcccc; font-size:0.85em; margin:0; font-weight:bold;">Recovery Procedure:</p>
+      <ol style="color:#ffcccc; font-size:0.8em; margin-top:8px; padding-left:20px;">
+        <li>Verify robot environment is safe</li>
+        <li>Confirm all personnel are clear of the robot</li>
+        <li>Click "Reset E-STOP" below to restore control</li>
+      </ol>
+    </div>
+    <button class="btn btn-outline-light btn-lg" onclick="resetEstop()">
+      Reset E-STOP — Restore Control
+    </button>
+  </div>
+</div>
+
+
+<!-- Toast container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100;">
+  <div id="toast-el" class="toast align-items-center border-0"
+       role="status" aria-live="polite" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold" id="toast-body" style="font-size:13px;"></div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+              aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ══════════════════════════════════════════════════════
+  //  STATE
+  // ══════════════════════════════════════════════════════
+  const S = {
+    username: '',
+    role: 'COMMANDER',
+    connected: true,
+    rtt: 42,
+    battery: 72,
+    robotStatus: 'IDLE',
+    x: 10,
+    y: 7,
+    targetX: null,
+    targetY: null,
+    estopActive: false,
+    logs: [],
+  };
+  let logId = 1;
+  let estopTimer = null;
+
+  // ══════════════════════════════════════════════════════
+  //  INIT
+  // ══════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', () => {
+    showScreen('login');
+    initEstop();
+    document.getElementById('login-password')
+      .addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+    // Live RTT simulation
+    setInterval(() => {
+      if (S.connected && S.username) {
+        S.rtt = Math.floor(Math.random() * 50) + 20;
+        updateStatusBar();
+      }
+    }, 3000);
+  });
+
+  // ══════════════════════════════════════════════════════
+  //  SCREENS
+  // ══════════════════════════════════════════════════════
+  function showScreen(name) {
+    document.getElementById('screen-login').style.display =
+      name === 'login' ? 'flex' : 'none';
+    document.getElementById('screen-dashboard').style.display =
+      name === 'dashboard' ? 'block' : 'none';
+    if (name === 'dashboard') renderDashboard();
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  LOGIN
+  // ══════════════════════════════════════════════════════
+  function handleLogin() {
+    const u = document.getElementById('login-username').value.trim();
+    const errEl = document.getElementById('login-error');
+    if (!u) {
+      errEl.textContent = 'Please enter a username.';
+      errEl.classList.remove('d-none');
+      return;
+    }
+    errEl.classList.add('d-none');
+    S.username = u;
+    S.role = document.getElementById('login-role').value;
+    addLog('LOGIN', `role=${S.role}`, 'SUCCESS');
+    showScreen('dashboard');
+  }
+
+  function logout() {
+    S.username = '';
+    showScreen('login');
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  RENDER DASHBOARD
+  // ══════════════════════════════════════════════════════
+  function renderDashboard() {
+    document.getElementById('nav-user-info').textContent =
+      `${S.username} [${S.role}]`;
+    updateStatusBar();
+    updateStatusPanel();
+    updateRolePanel();
+    renderMap();
+    renderLog();
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  STATUS BAR
+  // ══════════════════════════════════════════════════════
+  function updateStatusBar() {
+    const connEl = document.getElementById('sb-conn-val');
+    connEl.textContent = S.connected ? '● Connected' : '○ Disconnected';
+    connEl.className = `sb-val ${S.connected ? 'text-success' : 'text-danger'}`;
+
+    document.getElementById('sb-rtt-val').textContent =
+      S.connected ? `${S.rtt}ms` : '—';
+
+    const batEl = document.getElementById('sb-bat-val');
+    batEl.textContent = `${S.battery}%`;
+    batEl.className = `sb-val ${S.battery < 20 ? 'text-danger' : S.battery < 40 ? 'text-warning' : 'text-success'}`;
+
+    const robotColors = { IDLE:'', MOVING:'text-primary', LOW_BATTERY:'text-danger', STUCK:'text-warning' };
+    const robotEl = document.getElementById('sb-robot-val');
+    robotEl.textContent = S.robotStatus;
+    robotEl.className = `sb-val ${robotColors[S.robotStatus] || ''}`;
+
+    document.getElementById('sb-role-val').textContent = S.role;
+  }
+
+  function setGlobalCmd(text) {
+    document.getElementById('global-cmd-text').textContent = text;
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  LEFT STATUS PANEL
+  // ══════════════════════════════════════════════════════
+  function updateStatusPanel() {
+    document.getElementById('stat-x').textContent = S.x;
+    document.getElementById('stat-y').textContent = S.y;
+    document.getElementById('stat-status').textContent = S.robotStatus;
+    document.getElementById('stat-battery').textContent = `${S.battery}%`;
+    document.getElementById('robot-badge').textContent = S.robotStatus;
+    document.getElementById('user-display').textContent = S.username;
+    document.getElementById('role-badge').textContent = S.role;
+
+    const bar = document.getElementById('bat-bar');
+    bar.style.width = `${S.battery}%`;
+    bar.setAttribute('aria-valuenow', S.battery);
+    bar.className = `progress-bar ${S.battery < 20 ? 'bg-danger' : S.battery < 40 ? 'bg-warning' : 'bg-success'}`;
+
+    const connText = document.getElementById('conn-text');
+    connText.textContent = S.connected ? '● Connected' : '○ Disconnected';
+    connText.className = S.connected ? 'text-success fw-bold' : 'text-danger fw-bold';
+
+    // Banners
+    document.getElementById('banner-signal').classList.toggle('d-none', S.connected);
+    document.getElementById('banner-x').textContent = S.x;
+    document.getElementById('banner-y').textContent = S.y;
+    document.getElementById('banner-battery').classList.toggle('d-none', S.battery >= 20);
+    document.getElementById('banner-bat-pct').textContent = S.battery;
+    document.getElementById('disc-x').textContent = S.x;
+    document.getElementById('disc-y').textContent = S.y;
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  ROLE PANEL
+  // ══════════════════════════════════════════════════════
+  function updateRolePanel() {
+    document.getElementById('commander-panel').style.display =
+      S.role === 'COMMANDER' ? 'block' : 'none';
+    document.getElementById('viewer-panel').style.display =
+      S.role === 'VIEWER' ? 'block' : 'none';
+    document.getElementById('auditor-panel').style.display =
+      S.role === 'AUDITOR' ? 'block' : 'none';
+
+    if (S.role === 'COMMANDER') {
+      const disabled = !S.connected || S.estopActive;
+      document.getElementById('move-controls').classList.toggle('d-none', disabled);
+      document.getElementById('move-disc-msg').classList.toggle('d-none', !disabled);
+      document.getElementById('reset-btn').disabled = disabled;
+      document.getElementById('refresh-btn').disabled = false;
+    }
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  MOVE ROBOT
+  // ══════════════════════════════════════════════════════
+  function handleMove() {
+    const xRaw = document.getElementById('move-x').value;
+    const yRaw = document.getElementById('move-y').value;
+    const errEl = document.getElementById('move-error');
+
+    if (xRaw === '' || yRaw === '') {
+      return showMoveErr('Both X and Y are required.');
+    }
+    const x = parseInt(xRaw), y = parseInt(yRaw);
+    if (isNaN(x) || isNaN(y)) return showMoveErr('Coordinates must be integers.');
+    if (x < 0 || x > 20 || y < 0 || y > 20)
+      return showMoveErr(`Coordinates must be 0–20. Got (${x}, ${y}).`);
+
+    errEl.classList.add('d-none');
+
+    S.targetX = x; S.targetY = y;
+    renderMap();
+
+    const btn = document.getElementById('move-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Sending…';
+    document.getElementById('lifecycle-wrap').style.display = 'block';
+
+    const id = addLog('MOVE', `x=${x}, y=${y}`, 'QUEUED');
+    setLifecycle('queued', `Command queued — (${x}, ${y})`);
+
+    setTimeout(() => {
+      setLifecycle('accepted', `Accepted by robot — ETA ~2s`);
+      updateLog(id, 'ACCEPTED');
+
+      setTimeout(() => {
+        S.robotStatus = 'MOVING';
+        setLifecycle('executing', `Robot moving to (${x}, ${y})…`);
+        updateLog(id, 'EXECUTING');
+        updateStatusBar(); updateStatusPanel(); renderMap();
+
+        setTimeout(() => {
+          S.x = x; S.y = y;
+          S.robotStatus = 'IDLE';
+          S.targetX = null; S.targetY = null;
+
+          setLifecycle('complete', `Complete — robot at (${x}, ${y})`);
+          updateLog(id, 'SUCCESS');
+          updateStatusBar(); updateStatusPanel(); renderMap();
+
+          btn.disabled = false;
+          btn.textContent = '▶ MOVE';
+          showToast('success', `✔ Robot moved to (${x}, ${y})`);
+          setGlobalCmd(`[${ts()}] Move (${x},${y}) — Complete`);
+        }, 1500);
+      }, 800);
+    }, 500);
+  }
+
+  function showMoveErr(msg) {
+    const e = document.getElementById('move-error');
+    e.textContent = msg; e.classList.remove('d-none');
+  }
+
+  function setLifecycle(stage, text) {
+    const order = ['queued', 'accepted', 'executing', 'complete'];
+    const idx = order.indexOf(stage);
+    order.forEach((s, i) => {
+      const el = document.getElementById(`s-${s}`);
+      el.className = i < idx ? 'cmd-stage done' :
+                     i === idx ? (stage === 'complete' ? 'cmd-stage done' : 'cmd-stage active') :
+                     'cmd-stage';
+    });
+    if (text) {
+      document.getElementById('lifecycle-text').textContent = text;
+      setGlobalCmd(`[${ts()}] ${text}`);
+    }
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  QUICK ACTIONS
+  // ══════════════════════════════════════════════════════
+  function handleReset() {
+    const id = addLog('RESET', 'full_reset', 'QUEUED');
+    showToast('secondary', '↺ Resetting robot…');
+    setTimeout(() => {
+      S.x = 0; S.y = 0; S.robotStatus = 'IDLE';
+      S.battery = 100; S.targetX = null; S.targetY = null;
+      updateLog(id, 'SUCCESS');
+      updateStatusBar(); updateStatusPanel(); renderMap();
+      showToast('success', '✔ Robot reset — now at (0, 0)');
+      setGlobalCmd(`[${ts()}] Reset — Complete`);
+    }, 900);
+  }
+
+  function handleRefresh() {
+    showToast('secondary', '📡 Refreshing…');
+    setTimeout(() => {
+      S.rtt = Math.floor(Math.random() * 60) + 15;
+      updateStatusBar();
+      showToast('success', `✔ Refreshed — RTT ${S.rtt}ms`);
+    }, 600);
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  E-STOP (AI Snippet 2 adapted)
+  // ══════════════════════════════════════════════════════
+  function initEstop() {
+    const btn = document.getElementById('estop-btn');
+    const start = () => {
+      if (S.estopActive) return;
+      btn.classList.add('pressing');
+      estopTimer = setTimeout(triggerEstop, 1500);
+    };
+    const cancel = () => {
+      clearTimeout(estopTimer);
+      btn.classList.remove('pressing');
+    };
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('touchstart', start, { passive: true });
+    ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(ev =>
+      btn.addEventListener(ev, cancel));
+    // Keyboard support
+    btn.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) start(); });
+    btn.addEventListener('keyup',   e => { if (e.key === ' ' || e.key === 'Enter') cancel(); });
+  }
+
+  function triggerEstop() {
+    S.estopActive = true;
+    const overlay = document.getElementById('estop-overlay');
+    overlay.style.display = 'flex';
+    document.getElementById('estop-ts').textContent =
+      `Triggered by ${S.username} at ${new Date().toLocaleTimeString()}`;
+    addLog('E-STOP', `triggered_by=${S.username}`, 'TRIGGERED');
+    setGlobalCmd(`[${ts()}] ⛔ E-STOP by ${S.username}`);
+    updateStatusBar(); updateStatusPanel(); updateRolePanel();
+  }
+
+  function resetEstop() {
+    S.estopActive = false;
+    document.getElementById('estop-overlay').style.display = 'none';
+    addLog('E-STOP-RESET', `by=${S.username}`, 'RESTORED');
+    updateStatusBar(); updateRolePanel();
+    showToast('success', '✔ E-STOP reset — System restored');
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  CANVAS MAP
+  // ══════════════════════════════════════════════════════
+  function renderMap() {
+    const canvas = document.getElementById('robot-map');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const CELLS = 20;
+    const cw = W / CELLS, ch = H / CELLS;
+
+    // Background
+    ctx.fillStyle = '#0b0b18';
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = '#1e1e30';
+    ctx.lineWidth = 0.8;
+    for (let i = 0; i <= CELLS; i++) {
+      ctx.beginPath(); ctx.moveTo(i * cw, 0); ctx.lineTo(i * cw, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i * ch); ctx.lineTo(W, i * ch); ctx.stroke();
+    }
+
+    // Axis labels
+    ctx.fillStyle = '#444';
+    ctx.font = '9px Arial';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= CELLS; i += 5) {
+      ctx.fillText(String(i), i * cw + (i === 0 ? 6 : 0), H - 3);
+    }
+    ctx.textAlign = 'right';
+    for (let i = 0; i <= CELLS; i += 5) {
+      ctx.fillText(String(CELLS - i), 14, i * ch + 4);
+    }
+    ctx.fillStyle = '#333'; ctx.font = '8px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('X →', W - 8, H - 3);
+    ctx.save();
+    ctx.translate(5, H / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Y ↑', 0, 0);
+    ctx.restore();
+
+    // Target marker
+    if (S.targetX !== null && S.targetY !== null) {
+      const tx = S.targetX * cw + cw / 2;
+      const ty = (CELLS - S.targetY) * ch + ch / 2;
+      ctx.strokeStyle = 'rgba(13,110,253,0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.arc(tx, ty, cw * 0.45, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(13,110,253,0.8)';
+      ctx.font = 'bold 9px Arial'; ctx.textAlign = 'center';
+      ctx.fillText('T', tx, ty + 3);
+    }
+
+    // Robot marker
+    const rx = S.x * cw + cw / 2;
+    const ry = (CELLS - S.y) * ch + ch / 2;
+    const statusGlow = { MOVING: '#0d6efd', STUCK: '#ffc107', LOW_BATTERY: '#dc3545' };
+    if (statusGlow[S.robotStatus]) {
+      ctx.shadowColor = statusGlow[S.robotStatus];
+      ctx.shadowBlur = 12;
+    }
+    ctx.strokeStyle = statusGlow[S.robotStatus] || '#4dabf7';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(rx, ry, cw * 0.42, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = S.robotStatus === 'MOVING' ? '#0d6efd' : '#3a3a5c';
+    ctx.beginPath(); ctx.arc(rx, ry, cw * 0.26, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#888'; ctx.font = '9px Arial'; ctx.textAlign = 'center';
+    ctx.fillText(`(${S.x},${S.y})`, rx, ry + ch * 0.58 + 8);
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  AUDIT LOG
+  // ══════════════════════════════════════════════════════
+  function addLog(action, payload, result) {
+    const id = logId++;
+    S.logs.unshift({ id, time: ts(), user: S.username || 'system', action, payload, result });
+    renderLog();
+    return id;
+  }
+
+  function updateLog(id, result) {
+    const e = S.logs.find(l => l.id === id);
+    if (e) { e.result = result; renderLog(); }
+  }
+
+  function renderLog() {
+    const tbody = document.getElementById('log-tbody');
+    document.getElementById('log-count').textContent =
+      `${S.logs.length} entr${S.logs.length === 1 ? 'y' : 'ies'}`;
+
+    if (!S.logs.length) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No commands yet</td></tr>';
+      return;
+    }
+
+    const cls = r => ({
+      SUCCESS: 'text-success', RESTORED: 'text-success',
+      TRIGGERED: 'text-danger',
+      QUEUED: 'text-primary', ACCEPTED: 'text-info', EXECUTING: 'text-warning',
+    }[r] || 'text-muted');
+
+    tbody.innerHTML = S.logs.slice(0, 25).map((l, i) =>
+      `<tr class="${i === 0 ? 'log-new' : ''}">
+        <td class="text-muted">${l.time}</td>
+        <td>${l.user}</td>
+        <td><code>${l.action}</code></td>
+        <td class="text-muted" style="max-width:90px;overflow:hidden;text-overflow:ellipsis;">${l.payload}</td>
+        <td class="${cls(l.result)} fw-semibold">${l.result}</td>
+      </tr>`
+    ).join('');
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  SIMULATION HELPERS
+  // ══════════════════════════════════════════════════════
+  function simulateDisconnect() {
+    S.connected = false; S.rtt = 0;
+    updateStatusBar(); updateStatusPanel(); updateRolePanel();
+    addLog('CONNECTION', 'signal_lost', 'DISCONNECTED');
+    showToast('danger', '⚠ Signal Lost — Robot API unreachable');
+  }
+
+  function simulateReconnect() {
+    S.connected = true; S.rtt = Math.floor(Math.random() * 50) + 20;
+    updateStatusBar(); updateStatusPanel(); updateRolePanel();
+    addLog('CONNECTION', 'reconnected', 'SUCCESS');
+    showToast('success', '✔ Reconnected to Robot API');
+  }
+
+  function simulateLowBattery() {
+    S.battery = 14; S.robotStatus = 'LOW_BATTERY';
+    updateStatusBar(); updateStatusPanel(); renderMap();
+    addLog('TELEMETRY', 'battery=14%', 'LOW_BATTERY');
+    showToast('danger', '⚠ Low Battery — 14% remaining');
+  }
+
+  function simulateStuck() {
+    S.robotStatus = 'STUCK';
+    updateStatusBar(); updateStatusPanel(); renderMap();
+    addLog('TELEMETRY', `pos=(${S.x},${S.y})`, 'STUCK');
+    showToast('warning', `⚠ Robot STUCK at (${S.x}, ${S.y})`);
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  TOAST
+  // ══════════════════════════════════════════════════════
+  function showToast(type, msg) {
+    const el = document.getElementById('toast-el');
+    document.getElementById('toast-body').textContent = msg;
+    el.className = `toast align-items-center text-bg-${type} border-0`;
+    new bootstrap.Toast(el, { delay: 3500 }).show();
+  }
+
+  // ══════════════════════════════════════════════════════
+  //  HELPERS
+  // ══════════════════════════════════════════════════════
+  function ts() {
+    return new Date().toLocaleTimeString('en-GB', { hour12: false });
+  }
+</script>
+</body>
+</html>
