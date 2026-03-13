@@ -2,577 +2,818 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>GCS Dashboard — Low-Fidelity Wireframe</title>
+  <title>GCS Dashboard — Low-Fidelity Wireframe (CMP9134)</title>
   <style>
-    /* ── Wireframe palette: greys only, no real colours ── */
+    /* ══════════════════════════════════════════
+       WIREFRAME BASE — greyscale only, no brand
+    ══════════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #e8e8e8; color: #222; font-size: 13px; }
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      color: #222;
-      font-size: 13px;
-    }
+    /* ── Layout helpers ── */
+    .flex   { display: flex; }
+    .col    { flex-direction: column; }
+    .gap4   { gap: 4px; }
+    .gap6   { gap: 6px; }
+    .gap8   { gap: 8px; }
+    .gap12  { gap: 12px; }
+    .center { text-align: center; }
+    .bold   { font-weight: bold; }
+    .full   { width: 100%; }
+    .mt4    { margin-top: 4px; }
+    .mt8    { margin-top: 8px; }
+    .mt12   { margin-top: 12px; }
 
-    /* ── Wireframe annotation style ── */
-    .label {
-      font-size: 10px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-    .box {
-      background: #d9d9d9;
-      border: 1.5px solid #aaa;
-      border-radius: 3px;
-      padding: 8px 10px;
-    }
-    .box-outline {
-      background: #f9f9f9;
-      border: 1.5px dashed #aaa;
-      border-radius: 3px;
-      padding: 8px 10px;
-    }
-    .placeholder {
-      background: #bbb;
-      border-radius: 2px;
-      height: 12px;
-      margin: 4px 0;
-    }
-    .placeholder.short { width: 40%; }
-    .placeholder.medium { width: 65%; }
-    .placeholder.full   { width: 100%; }
+    /* ── Wireframe boxes ── */
+    .box        { background: #d4d4d4; border: 1.5px solid #999; border-radius: 3px; padding: 8px 10px; }
+    .box-dash   { background: #f0f0f0; border: 1.5px dashed #aaa; border-radius: 3px; padding: 8px 10px; }
+    .box-warn   { background: #c8c8c8; border: 2px solid #777; border-radius: 3px; padding: 8px 10px; }
+    .box-error  { background: #bbbbbb; border: 2.5px solid #555; border-radius: 3px; padding: 8px 10px; }
 
-    /* ── Page title ── */
-    .wireframe-title {
-      text-align: center;
-      padding: 10px;
-      background: #ccc;
-      border-bottom: 2px solid #999;
-      font-weight: bold;
-      font-size: 12px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #444;
-    }
+    /* ── Placeholder text lines ── */
+    .ph         { background: #aaa; border-radius: 2px; height: 11px; margin: 3px 0; }
+    .ph.s       { width: 35%; }
+    .ph.m       { width: 60%; }
+    .ph.l       { width: 85%; }
+    .ph.f       { width: 100%; }
 
-    /* ════════════════════════════════
-       SECTION 1 — MAIN DASHBOARD
-    ════════════════════════════════ */
-    .section-header {
-      background: #bbb;
-      padding: 6px 16px;
-      font-weight: bold;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #333;
-      border-top: 2px solid #999;
-      border-bottom: 1px solid #aaa;
-    }
+    /* ── Buttons ── */
+    .btn        { background: #c0c0c0; border: 1.5px solid #888; border-radius: 3px; padding: 6px 14px; font-size: 12px; display: inline-block; text-align: center; }
+    .btn.lg     { padding: 10px 0; font-size: 14px; font-weight: bold; width: 100%; }
+    .btn.xl     { padding: 14px 0; font-size: 16px; font-weight: bold; width: 100%; border: 3px solid #555; border-radius: 5px; background: #aaa; }
+    .btn.sm     { padding: 4px 10px; font-size: 11px; }
 
-    /* NAV BAR */
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #c8c8c8;
-      border-bottom: 2px solid #999;
-      padding: 8px 16px;
-      height: 44px;
-    }
-    .navbar .logo { font-weight: bold; font-size: 14px; color: #333; }
-    .navbar .role-badge {
-      background: #aaa;
-      border: 1.5px solid #888;
-      border-radius: 12px;
-      padding: 3px 12px;
-      font-size: 11px;
-      font-weight: bold;
-    }
-    .navbar .nav-right {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .btn-wire {
-      background: #c0c0c0;
-      border: 1.5px solid #888;
-      border-radius: 3px;
-      padding: 5px 12px;
-      font-size: 12px;
-      cursor: default;
-    }
-    .btn-wire.large {
-      padding: 10px 24px;
-      font-size: 14px;
-      font-weight: bold;
-    }
-    .btn-wire.estop {
-      padding: 14px 32px;
-      font-size: 16px;
-      font-weight: bold;
-      background: #a0a0a0;
-      border: 3px solid #666;
-      border-radius: 6px;
-    }
+    /* ── Input ── */
+    .inp        { background: #e4e4e4; border: 1.5px solid #999; border-radius: 3px; height: 30px; padding: 0 8px; font-size: 12px; width: 100%; display: block; }
 
-    /* MAIN CONTENT GRID */
-    .dashboard-body {
-      display: grid;
-      grid-template-columns: 220px 1fr 230px;
-      grid-template-rows: auto 1fr;
-      gap: 10px;
-      padding: 10px 16px;
-      min-height: 520px;
-    }
+    /* ── Labels / annotations ── */
+    .lbl        { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+    .anno       { font-size: 10px; color: #777; font-style: italic; margin-top: 3px; }
+    .hci-tag    { font-size: 10px; background: #b8b8b8; border: 1px solid #888; border-radius: 2px; padding: 1px 5px; display: inline-block; margin: 2px 2px 0 0; }
+    .rbac-note  { font-size: 10px; background: #c0c0c0; border: 1.5px dashed #888; border-radius: 3px; padding: 5px 8px; text-align: center; }
 
-    /* LEFT — STATUS PANEL */
-    .status-panel {
-      grid-column: 1;
-      grid-row: 1 / 3;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .status-card { padding: 10px; }
-    .status-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #bbb;
-      padding: 5px 0;
-      font-size: 12px;
-    }
-    .status-row:last-child { border-bottom: none; }
-    .status-val {
-      background: #bbb;
-      border-radius: 2px;
-      padding: 2px 8px;
-      font-weight: bold;
-      font-size: 12px;
-    }
-    .battery-bar-wrap {
-      background: #bbb;
-      border-radius: 2px;
-      height: 10px;
-      width: 100%;
-      margin-top: 4px;
-    }
-    .battery-bar-fill {
-      background: #888;
-      height: 100%;
-      width: 72%;
-      border-radius: 2px;
-    }
+    /* ══════════════════════
+       SECTION HEADERS
+    ══════════════════════ */
+    .page-title { text-align: center; background: #bbb; border-bottom: 2px solid #888; padding: 10px; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #333; }
+    .sec-hdr    { background: #b0b0b0; border-top: 2px solid #888; border-bottom: 1px solid #999; padding: 7px 16px; font-weight: bold; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #333; }
+    .screen-wrap { padding: 12px 16px 20px; border-bottom: 2px dashed #bbb; }
+    .screen-label { font-size: 11px; font-weight: bold; color: #555; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* CENTER — MAP */
-    .map-panel {
-      grid-column: 2;
-      grid-row: 1;
-    }
-    .grid-area {
-      aspect-ratio: 1;
-      width: 100%;
-      max-width: 360px;
-      background: repeating-linear-gradient(
-        #ccc 0px, #ccc 1px, transparent 1px, transparent 17px),
-        repeating-linear-gradient(
-        90deg, #ccc 0px, #ccc 1px, transparent 1px, transparent 17px);
-      background-color: #e0e0e0;
-      border: 2px solid #aaa;
-      border-radius: 3px;
-      position: relative;
-      margin: 0 auto;
-    }
-    .robot-marker {
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      background: #777;
-      border: 2px solid #444;
-      border-radius: 50%;
-      top: 40%;
-      left: 55%;
-      transform: translate(-50%, -50%);
-    }
-    .fitts-note {
-      font-size: 10px;
-      color: #888;
-      text-align: center;
-      margin-top: 4px;
-      font-style: italic;
-    }
+    /* ── Simulated browser chrome ── */
+    .browser    { border: 2px solid #999; border-radius: 6px; overflow: hidden; max-width: 900px; margin: 0 auto; box-shadow: 2px 2px 6px rgba(0,0,0,0.15); }
+    .browser-bar { background: #c8c8c8; border-bottom: 1px solid #aaa; padding: 6px 10px; font-size: 11px; display: flex; align-items: center; gap: 8px; }
+    .browser-dot { width: 10px; height: 10px; border-radius: 50%; background: #aaa; border: 1px solid #888; display: inline-block; }
+    .browser-url { background: #e0e0e0; border: 1px solid #bbb; border-radius: 10px; padding: 2px 12px; font-size: 11px; flex: 1; color: #555; }
 
-    /* BOTTOM CENTER — AUDIT LOG */
-    .log-panel {
-      grid-column: 2;
-      grid-row: 2;
-    }
-    .log-table { width: 100%; border-collapse: collapse; }
-    .log-table th, .log-table td {
-      border: 1px solid #bbb;
-      padding: 5px 8px;
-      text-align: left;
-      font-size: 11px;
-    }
-    .log-table th { background: #ccc; font-weight: bold; }
-    .log-table td .placeholder { margin: 0; height: 10px; }
+    /* ── Navbar ── */
+    .navbar     { background: #c4c4c4; border-bottom: 2px solid #999; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; height: 44px; }
+    .logo       { font-weight: bold; font-size: 14px; }
+    .badge      { background: #aaa; border: 1.5px solid #777; border-radius: 12px; padding: 3px 12px; font-size: 11px; font-weight: bold; }
 
-    /* RIGHT — CONTROL PANEL (Commander only) */
-    .control-panel {
-      grid-column: 3;
-      grid-row: 1 / 3;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .rbac-note {
-      background: #c8c8c8;
-      border: 1.5px dashed #888;
-      border-radius: 3px;
-      padding: 6px 8px;
-      font-size: 10px;
-      color: #555;
-      text-align: center;
-    }
-    .move-inputs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      margin: 6px 0;
-    }
-    .input-wire {
-      background: #e0e0e0;
-      border: 1.5px solid #999;
-      border-radius: 3px;
-      height: 30px;
-      padding: 0 8px;
-      font-size: 12px;
-    }
-    .controls-center { text-align: center; }
-    .divider {
-      border: none;
-      border-top: 1px dashed #aaa;
-      margin: 6px 0;
-    }
+    /* ── Status rows ── */
+    .stat-row   { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #bbb; padding: 5px 0; font-size: 12px; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-val   { background: #b8b8b8; border-radius: 2px; padding: 2px 8px; font-weight: bold; font-size: 11px; }
 
-    /* ════════════════════════════════
-       SECTION 2 — MOVE ROBOT DEEP-DIVE
-    ════════════════════════════════ */
-    .deep-dive-wrap {
-      padding: 10px 16px;
-    }
-    .deep-dive-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-    .flow-step {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .step-num {
-      background: #aaa;
-      color: #333;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: bold;
-      flex-shrink: 0;
-    }
-    .step-content { flex: 1; }
-    .feedback-box {
-      border: 1.5px dashed #999;
-      border-radius: 3px;
-      background: #e8e8e8;
-      padding: 8px;
-      text-align: center;
-      font-size: 12px;
-      color: #555;
-    }
-    .annotation {
-      font-size: 10px;
-      color: #888;
-      font-style: italic;
-      margin-top: 3px;
-    }
+    /* ── Battery bar ── */
+    .bat-wrap   { background: #bbb; border-radius: 2px; height: 9px; width: 100%; margin-top: 4px; }
+    .bat-fill   { background: #888; height: 100%; border-radius: 2px; }
+    .bat-low    { background: #777; }
+
+    /* ── Grid map ── */
+    .grid-map   { background: repeating-linear-gradient(#ccc 0 1px, transparent 1px 17px), repeating-linear-gradient(90deg, #ccc 0 1px, transparent 1px 17px), #ddd; border: 2px solid #aaa; border-radius: 3px; position: relative; }
+    .robot-dot  { position: absolute; width: 14px; height: 14px; background: #666; border: 2px solid #333; border-radius: 50%; transform: translate(-50%,-50%); }
+
+    /* ── Table ── */
+    table       { width: 100%; border-collapse: collapse; }
+    th, td      { border: 1px solid #bbb; padding: 5px 7px; font-size: 11px; text-align: left; }
+    th          { background: #c4c4c4; font-weight: bold; }
+
+    /* ── Step flow ── */
+    .step       { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+    .step-n     { background: #aaa; color: #333; border-radius: 50%; width: 20px; height: 20px; min-width: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; }
+    .divider    { border: none; border-top: 1px dashed #bbb; margin: 8px 0; }
+
+    /* ── Error/warning banners ── */
+    .banner     { background: #b0b0b0; border: 2px solid #777; border-radius: 3px; padding: 8px 14px; text-align: center; font-weight: bold; font-size: 13px; }
+    .spinner    { display: inline-block; width: 14px; height: 14px; border: 2px solid #888; border-top-color: #444; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+
+    /* ── Side-by-side comparison ── */
+    .compare    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .compare-lbl { background: #c4c4c4; border: 1px solid #aaa; padding: 4px 8px; font-size: 11px; font-weight: bold; text-align: center; border-radius: 3px 3px 0 0; margin-bottom: -2px; }
   </style>
 </head>
 <body>
 
-<div class="wireframe-title">
-  CMP9134 — Robot Management System &nbsp;|&nbsp; Low-Fidelity Wireframe &nbsp;|&nbsp; Week 6
+<!-- ═══════ COVER ═══════ -->
+<div class="page-title">
+  CMP9134 Software Engineering &nbsp;|&nbsp; Robot Management System (GCS)
+  &nbsp;|&nbsp; Low-Fidelity Wireframe &nbsp;|&nbsp; Week 6 Workshop
+</div>
+<div style="background:#d0d0d0; padding:8px 16px; font-size:11px; color:#555; border-bottom:1px solid #bbb;">
+  <strong>Screens covered:</strong>
+  [1] Login &nbsp;|&nbsp; [2] Dashboard – Commander &nbsp;|&nbsp; [3] Dashboard – Viewer &nbsp;|&nbsp;
+  [4] Signal Lost / Reconnecting &nbsp;|&nbsp; [5] Low Battery + STUCK Alert &nbsp;|&nbsp;
+  [6] Audit Log (Auditor) &nbsp;|&nbsp; [7] Deep-Dive: Move Robot Flow
+  &nbsp;&nbsp;&nbsp;
+  <strong>HCI Laws applied:</strong> Fitts · Hick · Shneiderman 8 · Norman 7
 </div>
 
-<!-- ═══════════════════════════════════════
-     SECTION 1: MAIN DASHBOARD VIEW
-═══════════════════════════════════════ -->
-<div class="section-header">[ 1 ] Main Dashboard View</div>
 
-<!-- NAV BAR -->
-<nav class="navbar">
-  <span class="logo">⬛ RMS GCS</span>
-  <div style="display:flex; gap:10px; align-items:center;">
-    <span class="role-badge">● COMMANDER</span>
-    <span class="label" style="margin:0;">username</span>
+<!-- ═══════════════════════════════════════════════
+     SCREEN 1 — LOGIN / REGISTRATION
+═══════════════════════════════════════════════ -->
+<div class="sec-hdr">[ Screen 1 ] Login &amp; Registration</div>
+<div class="screen-wrap">
+  <div class="screen-label">Entry point — all roles authenticate here before accessing any screen</div>
+
+  <div class="browser">
+    <div class="browser-bar">
+      <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+      <span class="browser-url">localhost:3000/login</span>
+    </div>
+
+    <div style="background:#e4e4e4; padding:40px 20px; display:flex; justify-content:center;">
+      <div style="width:320px;">
+        <!-- Logo area -->
+        <div class="box center" style="padding:14px; margin-bottom:20px;">
+          <div style="font-weight:bold; font-size:18px;">⬛ RMS GCS</div>
+          <div style="font-size:11px; color:#666; margin-top:4px;">Robot Management System</div>
+        </div>
+
+        <!-- Tabs: Login / Register -->
+        <div class="flex gap4 mb" style="margin-bottom:12px;">
+          <div class="btn full" style="background:#aaa; font-weight:bold;">Login</div>
+          <div class="btn full">Register</div>
+        </div>
+        <p class="anno">Shneiderman Rule 1: consistent tab pattern for both entry paths</p>
+
+        <div class="box flex col gap8 mt8">
+          <div>
+            <div class="lbl">Username</div>
+            <div class="inp" style="display:flex; align-items:center; color:#888;">username</div>
+          </div>
+          <div>
+            <div class="lbl">Password</div>
+            <div class="inp" style="display:flex; align-items:center; color:#888;">••••••••</div>
+          </div>
+          <div class="btn lg mt4">Login</div>
+          <p class="anno center">Fitts's Law: Login button full-width — large target</p>
+        </div>
+
+        <div class="box-dash mt8 center" style="font-size:11px;">
+          [ Error notification area ]<br>
+          <span style="font-size:10px; color:#888;">"Invalid username or password"</span>
+        </div>
+        <p class="anno center">Shneiderman Rule 5: simple error handling — no stack traces exposed</p>
+
+        <div style="text-align:center; margin-top:10px; font-size:11px; color:#666;">
+          No account? <span style="text-decoration:underline;">Register here</span>
+        </div>
+        <p class="anno center">Norman: make available actions visible</p>
+      </div>
+    </div>
   </div>
-  <div class="nav-right">
-    <div class="btn-wire">Dashboard</div>
-    <div class="btn-wire">Logs</div>
-    <div class="btn-wire">Admin</div>
-    <div class="btn-wire">Logout</div>
-  </div>
-</nav>
-<p class="annotation" style="padding:2px 16px;">
-  ↑ Role badge always visible — RBAC enforced: "VIEWER" role sees no control buttons
-</p>
+</div>
 
-<!-- DASHBOARD BODY -->
-<div class="dashboard-body">
 
-  <!-- LEFT — STATUS PANEL -->
-  <aside class="status-panel">
-    <div class="label">Robot Status</div>
-    <div class="box status-card">
-      <div class="status-row">
-        <span>Status</span>
-        <span class="status-val">IDLE</span>
+<!-- ═══════════════════════════════════════════════
+     SCREEN 2 — MAIN DASHBOARD (COMMANDER VIEW)
+═══════════════════════════════════════════════ -->
+<div class="sec-hdr">[ Screen 2 ] Main Dashboard — Commander View</div>
+<div class="screen-wrap">
+  <div class="screen-label">Full controls visible — RBAC role: COMMANDER</div>
+
+  <div class="browser">
+    <div class="browser-bar">
+      <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+      <span class="browser-url">localhost:3000/dashboard</span>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <span class="logo">⬛ RMS GCS</span>
+      <div class="flex gap8" style="align-items:center;">
+        <span class="badge">● COMMANDER</span>
+        <span style="font-size:11px; color:#555;">toptech5419</span>
       </div>
-      <div class="status-row">
-        <span>X Position</span>
-        <span class="status-val">10</span>
+      <div class="flex gap6">
+        <div class="btn sm">Dashboard</div>
+        <div class="btn sm">Logs</div>
+        <div class="btn sm">Logout</div>
       </div>
-      <div class="status-row">
-        <span>Y Position</span>
-        <span class="status-val">7</span>
-      </div>
-      <div class="status-row" style="flex-direction:column; align-items:flex-start;">
-        <span>Battery</span>
-        <div class="battery-bar-wrap">
-          <div class="battery-bar-fill"></div>
-        </div>
-        <span style="font-size:11px; margin-top:2px;">72%</span>
-      </div>
-    </div>
-
-    <div class="label">Connection</div>
-    <div class="box" style="text-align:center; padding:6px;">
-      <span style="font-size:11px;">● Connected — localhost:5000</span>
-    </div>
-
-    <div class="label">Active User</div>
-    <div class="box-outline" style="font-size:12px; text-align:center;">
-      <div>toptech5419</div>
-      <div style="font-weight:bold; margin-top:3px;">[ COMMANDER ]</div>
-    </div>
-  </aside>
-
-  <!-- CENTER — MAP -->
-  <main class="map-panel">
-    <div class="label">2D Grid Map (21 × 21)</div>
-    <div class="grid-area">
-      <div class="robot-marker" title="Robot position"></div>
-    </div>
-    <p class="fitts-note">Robot marker shows current (x, y) position. Obstacles shown as dark cells.</p>
-  </main>
-
-  <!-- CENTER BOTTOM — AUDIT LOG -->
-  <section class="log-panel">
-    <div class="label">Mission Audit Log (last 5 entries)</div>
-    <div class="box-outline" style="padding:6px;">
-      <table class="log-table">
-        <thead>
-          <tr>
-            <th>Timestamp</th>
-            <th>User</th>
-            <th>Action</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td></tr>
-          <tr><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td></tr>
-          <tr><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- RIGHT — CONTROL PANEL -->
-  <aside class="control-panel">
-    <div class="rbac-note">
-      ⚠ Visible to COMMANDER only<br>VIEWER sees "Read-Only Mode" notice
-    </div>
-
-    <div class="label">Move Robot</div>
-    <div class="box">
-      <div class="move-inputs">
-        <div>
-          <div class="label">X (0–20)</div>
-          <div class="input-wire">___</div>
-        </div>
-        <div>
-          <div class="label">Y (0–20)</div>
-          <div class="input-wire">___</div>
-        </div>
-      </div>
-      <div class="controls-center">
-        <div class="btn-wire large" style="width:100%; margin-top:4px;">▶ MOVE</div>
-      </div>
-      <p class="annotation">Fitts's Law: large button, full width</p>
-    </div>
-
-    <hr class="divider" />
-
-    <div class="label">Quick Actions</div>
-    <div class="box" style="display:flex; flex-direction:column; gap:6px;">
-      <div class="btn-wire" style="text-align:center;">↺ Reset Robot</div>
-      <div class="btn-wire" style="text-align:center;">📡 Refresh Status</div>
-    </div>
-
-    <hr class="divider" />
-
-    <div class="label">Emergency</div>
-    <div class="controls-center">
-      <div class="btn-wire estop">⛔ E-STOP</div>
-    </div>
-    <p class="annotation" style="text-align:center;">
-      Fitts's Law: largest button, bottom-right<br>always reachable
+    </nav>
+    <p class="anno" style="padding:2px 14px;">
+      <span class="hci-tag">Norman: Visibility</span> Role badge always in navbar — user always knows their permission level
     </p>
-  </aside>
 
-</div><!-- end dashboard-body -->
+    <!-- BODY: 3-column layout -->
+    <div style="display:grid; grid-template-columns:200px 1fr 220px; gap:8px; padding:10px 14px; min-height:460px;">
+
+      <!-- LEFT: STATUS PANEL -->
+      <div class="flex col gap8">
+        <div class="lbl">Robot Status</div>
+        <div class="box">
+          <div class="stat-row"><span>Status</span><span class="stat-val">IDLE</span></div>
+          <div class="stat-row"><span>X</span><span class="stat-val">10</span></div>
+          <div class="stat-row"><span>Y</span><span class="stat-val">7</span></div>
+          <div class="stat-row" style="flex-direction:column; align-items:flex-start;">
+            <span>Battery</span>
+            <div class="bat-wrap mt4"><div class="bat-fill" style="width:72%;"></div></div>
+            <span style="font-size:11px; margin-top:2px;">72%</span>
+          </div>
+        </div>
+
+        <div class="lbl">Connection</div>
+        <div class="box center" style="font-size:11px;">
+          ● Connected<br><span style="color:#666;">localhost:5000</span>
+        </div>
+
+        <div class="lbl">Active User</div>
+        <div class="box-dash center" style="font-size:11px;">
+          toptech5419<br><strong>[ COMMANDER ]</strong>
+        </div>
+      </div>
+
+      <!-- CENTER: MAP + LOG -->
+      <div class="flex col gap8">
+        <div class="lbl">2D Grid Map — 21 × 21</div>
+        <div class="grid-map" style="width:100%; padding-bottom:100%; max-width:340px; position:relative; margin:0 auto;">
+          <div class="robot-dot" style="top:40%; left:52%;"></div>
+        </div>
+        <p class="anno center">Robot position (10, 7) shown as filled circle. Obstacles = dark cells.</p>
+
+        <div class="lbl mt8">Mission Audit Log — Last 5 Entries</div>
+        <div class="box-dash" style="padding:6px;">
+          <table>
+            <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph s"></div></td></tr>
+              <tr><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph s"></div></td></tr>
+              <tr><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph s"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="anno">
+          <span class="hci-tag">Shneiderman Rule 4: Closure</span>
+          Every completed command appears here — user knows action was received
+        </p>
+      </div>
+
+      <!-- RIGHT: CONTROL PANEL (Commander only) -->
+      <div class="flex col gap8">
+        <div class="rbac-note">⚠ COMMANDER only<br>Viewer sees read-only notice here</div>
+
+        <div class="lbl">Move Robot</div>
+        <div class="box flex col gap6">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+            <div><div class="lbl">X (0–20)</div><div class="inp"></div></div>
+            <div><div class="lbl">Y (0–20)</div><div class="inp"></div></div>
+          </div>
+          <div class="btn lg">▶ MOVE</div>
+          <p class="anno">
+            <span class="hci-tag">Fitts</span> Full-width large button
+            <span class="hci-tag">Hick</span> 2 inputs only — no decision fatigue
+          </p>
+          <div class="box-dash center" style="font-size:11px; padding:6px;">[ Feedback notification ]</div>
+          <p class="anno">
+            <span class="hci-tag">Shneiderman Rule 3</span> Informative feedback on every action
+          </p>
+        </div>
+
+        <hr class="divider">
+
+        <div class="lbl">Quick Actions</div>
+        <div class="box flex col gap6">
+          <div class="btn full">↺ Reset Robot</div>
+          <div class="btn full">📡 Refresh Status</div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="lbl">Emergency</div>
+        <div class="btn xl">⛔ E-STOP</div>
+        <p class="anno center">
+          <span class="hci-tag">Fitts</span> Largest button — always at bottom-right, fixed position
+        </p>
+      </div>
+
+    </div><!-- end 3-col -->
+  </div><!-- end browser -->
+</div>
 
 
-<!-- ═══════════════════════════════════════
-     SECTION 2: DEEP-DIVE — MOVE ROBOT
-═══════════════════════════════════════ -->
-<div class="section-header">[ 2 ] Deep-Dive Feature: Move Robot — Interaction Sequence</div>
+<!-- ═══════════════════════════════════════════════
+     SCREEN 3 — DASHBOARD (VIEWER VIEW vs COMMANDER)
+═══════════════════════════════════════════════ -->
+<div class="sec-hdr">[ Screen 3 ] RBAC Comparison — Commander vs Viewer</div>
+<div class="screen-wrap">
+  <div class="screen-label">Same URL, different role — RBAC enforced server-side AND client-side</div>
 
-<div class="deep-dive-wrap">
-  <div class="deep-dive-grid">
+  <div class="compare">
 
-    <!-- LEFT — Interaction steps -->
+    <!-- COMMANDER -->
     <div>
-      <div class="label">User Interaction Flow</div>
-
-      <div class="flow-step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <div class="box" style="padding:6px;">Commander enters X and Y coordinates in input fields</div>
-          <div class="annotation">Hick's Law: only 2 inputs, clear labels (0–20 range)</div>
+      <div class="compare-lbl">● COMMANDER — Full Control</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+          <span class="browser-url">localhost:3000/dashboard</span>
         </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <div class="box" style="padding:6px;">Clicks large "▶ MOVE" button</div>
-          <div class="annotation">Fitts's Law: full-width, large target</div>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <div class="box" style="padding:6px;">Loading spinner appears inside button</div>
-          <div class="annotation">Shneiderman Rule 3: informative feedback</div>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="step-num">4a</div>
-        <div class="step-content">
-          <div class="feedback-box">✔ Success — "Robot moving to (12, 9)"</div>
-          <div class="annotation">Norman: get mapping right — position echoed back</div>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="step-num">4b</div>
-        <div class="step-content">
-          <div class="feedback-box">✖ Error — "Invalid coordinates. Must be 0–20"</div>
-          <div class="annotation">Shneiderman Rule 5: simple error handling</div>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <div class="box" style="padding:6px;">Status panel auto-updates with new X, Y, Status</div>
-          <div class="annotation">Shneiderman Rule 4: closure — user knows task is done</div>
-        </div>
-      </div>
-
-      <div class="flow-step">
-        <div class="step-num">6</div>
-        <div class="step-content">
-          <div class="box" style="padding:6px;">Audit log row appended with timestamp + result</div>
-          <div class="annotation">GDPR / assessment brief: every command logged</div>
+        <nav class="navbar" style="height:38px;">
+          <span class="logo" style="font-size:12px;">⬛ RMS GCS</span>
+          <span class="badge">● COMMANDER</span>
+          <div class="flex gap4"><div class="btn sm">Logs</div><div class="btn sm">Logout</div></div>
+        </nav>
+        <div style="padding:8px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div class="box-dash" style="padding:8px; font-size:11px; min-height:120px;">
+            [ Map + Status ]<br>
+            <div class="ph m mt8"></div><div class="ph s mt4"></div>
+          </div>
+          <div class="box flex col gap6" style="padding:8px;">
+            <div class="btn full" style="font-size:11px; padding:6px 0;">▶ MOVE</div>
+            <div class="btn full" style="font-size:11px; padding:5px 0;">↺ Reset</div>
+            <div class="btn xl" style="font-size:13px; padding:8px 0;">⛔ E-STOP</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT — Zoomed Move Panel -->
+    <!-- VIEWER -->
     <div>
-      <div class="label">Zoomed: Move Robot Panel (Commander view)</div>
-      <div class="box" style="max-width:260px; padding:14px;">
-
-        <div style="font-weight:bold; font-size:13px; margin-bottom:10px; text-align:center;">
-          Move Robot
+      <div class="compare-lbl">● VIEWER — Read Only</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+          <span class="browser-url">localhost:3000/dashboard</span>
         </div>
-
-        <div class="move-inputs">
-          <div>
-            <div class="label">X Position (0–20)</div>
-            <div class="input-wire" style="background:#e8e8e8;">12</div>
+        <nav class="navbar" style="height:38px;">
+          <span class="logo" style="font-size:12px;">⬛ RMS GCS</span>
+          <span class="badge" style="background:#c8c8c8;">● VIEWER</span>
+          <div class="flex gap4"><div class="btn sm">Logout</div></div>
+        </nav>
+        <div style="padding:8px; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div class="box-dash" style="padding:8px; font-size:11px; min-height:120px;">
+            [ Map + Status ]<br>
+            <div class="ph m mt8"></div><div class="ph s mt4"></div>
           </div>
-          <div>
-            <div class="label">Y Position (0–20)</div>
-            <div class="input-wire" style="background:#e8e8e8;">9</div>
+          <div class="box-warn flex col gap6" style="padding:8px; text-align:center;">
+            <div style="font-weight:bold; font-size:12px;">🔒 READ-ONLY MODE</div>
+            <div style="font-size:10px; color:#555;">You do not have permission to send commands to the robot.</div>
+            <div style="font-size:10px; color:#555; margin-top:4px;">Contact admin to upgrade your role.</div>
           </div>
-        </div>
-
-        <div style="margin-top:10px; text-align:center;">
-          <div class="btn-wire large" style="width:100%;">▶ MOVE</div>
-        </div>
-
-        <div style="margin-top:8px;">
-          <div class="feedback-box">[ Feedback notification area ]</div>
-        </div>
-
-        <hr class="divider" style="margin:12px 0;" />
-
-        <div style="text-align:center;">
-          <div class="btn-wire estop" style="width:100%;">⛔ EMERGENCY STOP</div>
-        </div>
-        <p class="annotation" style="text-align:center; margin-top:4px;">
-          Always visible — never hidden behind scrolling
-        </p>
-
-      </div>
-
-      <div style="margin-top:12px;">
-        <div class="label">HCI Laws Applied</div>
-        <div class="box-outline" style="padding:8px; font-size:11px;">
-          <p>• <strong>Fitts's Law</strong>: MOVE + E-STOP are the two largest buttons on the page. E-STOP is always fixed in view.</p>
-          <p style="margin-top:4px;">• <strong>Hick's Law</strong>: Only 2 inputs in the Move panel — no decision fatigue.</p>
-          <p style="margin-top:4px;">• <strong>Shneiderman Rule 3</strong>: Every action (click, success, error) produces immediate visual feedback.</p>
-          <p style="margin-top:4px;">• <strong>Shneiderman Rule 6</strong>: Inputs can be cleared; future implementation adds undo for reset.</p>
-          <p style="margin-top:4px;">• <strong>Norman (Visibility)</strong>: Controls visible only to authorised roles — VIEWER sees a "Read-Only" notice instead.</p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <p class="anno mt8">
+    <span class="hci-tag">Norman: Visibility</span> Viewer sees a clear "Read-Only" panel instead of hidden/disabled buttons — prevents confusion
+    &nbsp;|&nbsp;
+    <span class="hci-tag">Shneiderman Rule 7</span> User always knows their locus of control — no mystery about why buttons are absent
+  </p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 4 — CONNECTION ERROR / SIGNAL LOST
+═══════════════════════════════════════════════ -->
+<div class="sec-hdr">[ Screen 4 ] Connection Error States — Signal Lost &amp; Reconnecting</div>
+<div class="screen-wrap">
+  <div class="screen-label">Required by assessment brief: "UI must not crash or freeze when robot is unreachable"</div>
+
+  <div class="compare">
+
+    <!-- STATE A: Signal Lost -->
+    <div>
+      <div class="compare-lbl">State A — Signal Lost (API unreachable)</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+          <span class="browser-url">localhost:3000/dashboard</span>
+        </div>
+        <nav class="navbar" style="height:38px;">
+          <span class="logo" style="font-size:12px;">⬛ RMS GCS</span>
+          <span class="badge">● COMMANDER</span>
+        </nav>
+
+        <div style="padding:8px;">
+          <div class="banner" style="margin-bottom:8px;">
+            ⚠ SIGNAL LOST — Robot API Unreachable
+          </div>
+          <div style="font-size:11px; text-align:center; color:#555; margin-bottom:8px;">
+            Last known position: (10, 7) &nbsp;|&nbsp; Last contact: 14:32:05
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="box-warn" style="padding:8px; font-size:11px; min-height:80px; opacity:0.5;">
+              [ Map — greyed out ]
+            </div>
+            <div class="box flex col gap6" style="padding:8px; opacity:0.5;">
+              <div class="btn full" style="font-size:11px; padding:5px 0;">▶ MOVE (disabled)</div>
+              <div class="btn full" style="font-size:11px; padding:5px 0;">↺ Reset (disabled)</div>
+              <div class="btn xl" style="font-size:12px; padding:6px 0;">⛔ E-STOP (disabled)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="anno mt4">
+        <span class="hci-tag">Shneiderman Rule 3</span> Informative feedback on connection loss
+        &nbsp;|&nbsp; <span class="hci-tag">Norman: Error Design</span> Controls disabled — prevents sending commands into void
+      </p>
+    </div>
+
+    <!-- STATE B: Reconnecting -->
+    <div>
+      <div class="compare-lbl">State B — Reconnecting (retry in progress)</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+          <span class="browser-url">localhost:3000/dashboard</span>
+        </div>
+        <nav class="navbar" style="height:38px;">
+          <span class="logo" style="font-size:12px;">⬛ RMS GCS</span>
+          <span class="badge">● COMMANDER</span>
+        </nav>
+
+        <div style="padding:8px;">
+          <div class="box-warn center" style="margin-bottom:8px; padding:8px;">
+            <span class="spinner"></span>
+            <span style="font-size:12px; font-weight:bold;">Reconnecting to Robot API…</span><br>
+            <span style="font-size:10px; color:#555;">Attempt 2 of 3 &nbsp;|&nbsp; Next retry in 5s</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="box-dash" style="padding:8px; font-size:11px; min-height:80px;">
+              [ Map — stale data shown ]<br>
+              <div class="ph m mt8"></div>
+            </div>
+            <div class="box flex col gap6" style="padding:8px;">
+              <div class="btn full" style="font-size:11px; padding:5px 0; opacity:0.5;">▶ MOVE (waiting)</div>
+              <div class="btn xl" style="font-size:12px; padding:6px 0;">⛔ E-STOP</div>
+              <p class="anno center" style="font-size:10px;">E-STOP always enabled — safety priority</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="anno mt4">
+        <span class="hci-tag">Shneiderman Rule 3</span> Live countdown shown — user informed at all times
+        &nbsp;|&nbsp; <span class="hci-tag">Fitts</span> E-STOP stays active even during reconnect — safety-critical
+      </p>
     </div>
 
   </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 5 — LOW BATTERY + STUCK ALERTS
+═══════════════════════════════════════════════ -->
+<div class="sec-hdr">[ Screen 5 ] System Alert States — Low Battery &amp; STUCK</div>
+<div class="screen-wrap">
+  <div class="screen-label">Robot API returns status: LOW_BATTERY or STUCK — UI must surface these visually</div>
+
+  <div class="compare">
+
+    <!-- LOW BATTERY -->
+    <div>
+      <div class="compare-lbl">Alert: LOW_BATTERY (battery &lt; 20%)</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+          <span class="browser-url">localhost:3000/dashboard</span>
+        </div>
+        <nav class="navbar" style="height:38px;">
+          <span class="logo" style="font-size:12px;">⬛ RMS GCS</span>
+          <span class="badge">● COMMANDER</span>
+        </nav>
+        <div style="padding:8px;">
+          <div class="banner" style="margin-bottom:8px;">
+            ⚠ LOW BATTERY — Robot battery at 14%. Return to base recommended.
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="box" style="padding:8px; font-size:11px;">
+              <div class="stat-row"><span>Status</span><span class="stat-val">LOW_BATTERY</span></div>
+              <div class="stat-row" style="flex-direction:column; align-items:flex-start; padding-top:6px;">
+                <span>Battery</span>
+                <div class="bat-wrap mt4"><div class="bat-fill bat-low" style="width:14%;"></div></div>
+                <span style="font-size:11px; margin-top:2px; font-weight:bold;">14% ⚠</span>
+              </div>
+            </div>
+            <div class="box-warn center" style="padding:8px; font-size:11px;">
+              Pulsing warning indicator replaces normal status badge
+              <div class="ph m mt8"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="anno mt4">
+        <span class="hci-tag">Shneiderman Rule 3</span> Persistent visible alert — not just a toast
+        &nbsp;|&nbsp; <span class="hci-tag">Norman: Constraints</span> Moves restricted when battery critical
+      </p>
+    </div>
+
+    <!-- STUCK -->
+    <div>
+      <div class="compare-lbl">Alert: STUCK (robot cannot move)</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+          <span class="browser-url">localhost:3000/dashboard</span>
+        </div>
+        <nav class="navbar" style="height:38px;">
+          <span class="logo" style="font-size:12px;">⬛ RMS GCS</span>
+          <span class="badge">● COMMANDER</span>
+        </nav>
+        <div style="padding:8px;">
+          <div class="box-error center" style="margin-bottom:8px; padding:8px;">
+            <span style="font-size:13px; font-weight:bold;">⚠ ROBOT STUCK — Position: (10, 7)</span><br>
+            <span style="font-size:10px; color:#444;">Issue reset command or attempt a different move target.</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="box" style="padding:8px; font-size:11px;">
+              <div class="stat-row"><span>Status</span><span class="stat-val">STUCK</span></div>
+              <div class="ph m mt8"></div><div class="ph s mt4"></div>
+            </div>
+            <div class="box flex col gap6" style="padding:8px;">
+              <div class="btn full" style="font-size:11px; padding:5px 0;">↺ Reset (recommended)</div>
+              <div class="btn full" style="font-size:11px; padding:5px 0;">▶ MOVE (try alt target)</div>
+              <div class="btn xl" style="font-size:12px; padding:6px 0;">⛔ E-STOP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="anno mt4">
+        <span class="hci-tag">Shneiderman Rule 5</span> Actionable error — user told what to do next
+        &nbsp;|&nbsp; <span class="hci-tag">Norman: Error Design</span> System suggests recovery path
+      </p>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 6 — AUDIT LOG PAGE (AUDITOR VIEW)
+═══════════════════════════════════════════════ -->
+<div class="sec-hdr">[ Screen 6 ] Mission Audit Log — Auditor View</div>
+<div class="screen-wrap">
+  <div class="screen-label">Auditor role: read-only access to full mission log — no robot controls visible</div>
+
+  <div class="browser">
+    <div class="browser-bar">
+      <span class="browser-dot"></span><span class="browser-dot"></span><span class="browser-dot"></span>
+      <span class="browser-url">localhost:3000/logs</span>
+    </div>
+    <nav class="navbar">
+      <span class="logo">⬛ RMS GCS</span>
+      <div class="flex gap8" style="align-items:center;">
+        <span class="badge">● AUDITOR</span>
+        <span style="font-size:11px; color:#555;">auditor01</span>
+      </div>
+      <div class="flex gap6">
+        <div class="btn sm" style="background:#aaa;">Logs</div>
+        <div class="btn sm">Logout</div>
+      </div>
+    </nav>
+
+    <div style="padding:10px 14px;">
+      <!-- Filter bar -->
+      <div class="box flex gap8" style="margin-bottom:10px; padding:8px; align-items:flex-end; flex-wrap:wrap;">
+        <div>
+          <div class="lbl">Filter by User</div>
+          <div class="inp" style="width:140px; display:inline-block;"></div>
+        </div>
+        <div>
+          <div class="lbl">Date From</div>
+          <div class="inp" style="width:120px; display:inline-block;"></div>
+        </div>
+        <div>
+          <div class="lbl">Date To</div>
+          <div class="inp" style="width:120px; display:inline-block;"></div>
+        </div>
+        <div>
+          <div class="lbl">Action Type</div>
+          <div class="inp" style="width:120px; display:inline-block;"></div>
+        </div>
+        <div class="btn" style="padding:6px 14px;">Apply Filter</div>
+        <div class="btn" style="padding:6px 14px;">⬇ Export CSV</div>
+      </div>
+      <p class="anno">
+        <span class="hci-tag">Hick's Law</span> Filters grouped logically — no overwhelming options
+        &nbsp;|&nbsp; <span class="hci-tag">Shneiderman Rule 2</span> Export shortcut for power users
+      </p>
+
+      <!-- Log table -->
+      <div class="box-dash" style="padding:6px; margin-top:8px;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Timestamp</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Action</th>
+              <th>Payload</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph l"></div></td><td><div class="ph s"></div></td></tr>
+            <tr><td>2</td><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph l"></div></td><td><div class="ph s"></div></td></tr>
+            <tr><td>3</td><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph l"></div></td><td><div class="ph s"></div></td></tr>
+            <tr><td>4</td><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph l"></div></td><td><div class="ph s"></div></td></tr>
+            <tr><td>5</td><td><div class="ph m"></div></td><td><div class="ph s"></div></td><td><div class="ph s"></div></td><td><div class="ph m"></div></td><td><div class="ph l"></div></td><td><div class="ph s"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex gap6 mt8" style="justify-content:center;">
+        <div class="btn sm">« Prev</div>
+        <div class="btn sm" style="background:#aaa;">1</div>
+        <div class="btn sm">2</div>
+        <div class="btn sm">3</div>
+        <div class="btn sm">Next »</div>
+      </div>
+      <p class="anno center mt4">
+        <span class="hci-tag">Shneiderman Rule 8</span> Pagination — don't load 1000 rows; reduce memory load
+        &nbsp;|&nbsp; <span class="hci-tag">GDPR</span> Export CSV enables compliance reporting + right-to-erasure audit
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN 7 — DEEP-DIVE: MOVE ROBOT INTERACTION
+═══════════════════════════════════════════════ -->
+<div class="sec-hdr">[ Screen 7 ] Deep-Dive Feature — Move Robot: Full Interaction Sequence</div>
+<div class="screen-wrap">
+  <div class="screen-label">Zoomed interaction flow for the primary feature — covering all paths including errors</div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+
+    <!-- LEFT: Step-by-step flow -->
+    <div>
+      <div class="lbl">Interaction Steps — Happy Path &amp; Error Paths</div>
+
+      <div class="step">
+        <div class="step-n">1</div>
+        <div>
+          <div class="box" style="padding:6px; font-size:12px;">Commander enters X and Y in the two input fields</div>
+          <p class="anno">
+            <span class="hci-tag">Hick's Law</span> Only 2 inputs — minimal decisions
+            <span class="hci-tag">Norman: Constraints</span> Range hint (0–20) shown in label
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">2</div>
+        <div>
+          <div class="box" style="padding:6px; font-size:12px;">Client validates inputs before sending (out-of-range, non-integer)</div>
+          <p class="anno">
+            <span class="hci-tag">Shneiderman Rule 5</span> Prevent error before it reaches the API
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">3</div>
+        <div>
+          <div class="box" style="padding:6px; font-size:12px;">Clicks ▶ MOVE — button shows loading spinner</div>
+          <p class="anno">
+            <span class="hci-tag">Fitts</span> Full-width button — large click target
+            <span class="hci-tag">Shneiderman Rule 3</span> Immediate visual feedback
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">4a</div>
+        <div>
+          <div class="box-dash center" style="padding:6px; font-size:11px;">
+            ✔ Success — "Robot moving to (12, 9)"
+          </div>
+          <p class="anno">
+            <span class="hci-tag">Shneiderman Rule 4</span> Closure — coordinates echoed back to confirm receipt
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">4b</div>
+        <div>
+          <div class="box-warn center" style="padding:6px; font-size:11px;">
+            ✖ Validation error — "X must be between 0 and 20"
+          </div>
+          <p class="anno">
+            <span class="hci-tag">Norman: Error Design</span> Specific field highlighted, not just a generic error
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">4c</div>
+        <div>
+          <div class="box-error center" style="padding:6px; font-size:11px;">
+            ⚠ API timeout — "Robot unreachable. Retrying (1/3)…"
+          </div>
+          <p class="anno">
+            <span class="hci-tag">Shneiderman Rule 3</span> Retry count shown — user not left wondering
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">5</div>
+        <div>
+          <div class="box" style="padding:6px; font-size:12px;">Status panel auto-updates: new X, Y, Status, Battery</div>
+          <p class="anno">
+            <span class="hci-tag">Shneiderman Rule 4</span> Full closure cycle — user sees result in status
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">6</div>
+        <div>
+          <div class="box" style="padding:6px; font-size:12px;">Audit log row auto-appended: timestamp + user + payload + result</div>
+          <p class="anno">
+            Assessment brief: every command must be persistently logged
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">⛔</div>
+        <div>
+          <div class="btn xl" style="font-size:13px; padding:8px 0;">⛔ EMERGENCY STOP — always available</div>
+          <p class="anno center">
+            <span class="hci-tag">Fitts</span> Largest element — overrides any in-progress move
+            &nbsp;|&nbsp; <span class="hci-tag">Safety</span> Can be triggered at step 3, 4, or 5
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Zoomed Move Panel + HCI Summary -->
+    <div>
+      <div class="lbl">Zoomed: Move Robot Panel</div>
+      <div class="box" style="max-width:260px; padding:14px;">
+        <div class="bold center" style="font-size:13px; margin-bottom:10px;">Move Robot</div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div class="lbl">X Position (0–20)</div>
+            <div class="inp" style="background:#ddd; display:flex; align-items:center; padding-left:8px; color:#666;">12</div>
+          </div>
+          <div>
+            <div class="lbl">Y Position (0–20)</div>
+            <div class="inp" style="background:#ddd; display:flex; align-items:center; padding-left:8px; color:#666;">9</div>
+          </div>
+        </div>
+
+        <div class="btn lg mt8">▶ MOVE</div>
+
+        <div class="box-dash center mt8" style="padding:6px; font-size:11px;">
+          [ Notification: success / error / retry ]
+        </div>
+
+        <hr class="divider" style="margin:12px 0;">
+
+        <div class="btn xl">⛔ EMERGENCY STOP</div>
+        <p class="anno center mt4">Always visible — never scrolls off screen</p>
+      </div>
+
+      <div class="mt12">
+        <div class="lbl">HCI Laws &amp; Principles Applied — Summary</div>
+        <div class="box-dash" style="padding:10px; font-size:11px; line-height:1.7;">
+          <div><span class="hci-tag">Fitts's Law</span> MOVE + E-STOP are the two physically largest interactive elements on the entire dashboard</div>
+          <div class="mt4"><span class="hci-tag">Hick's Law</span> Move panel has exactly 2 inputs — no dropdown menus, no extra choices</div>
+          <div class="mt4"><span class="hci-tag">Shneiderman Rule 1</span> Same layout, fonts, icons used across all screens</div>
+          <div class="mt4"><span class="hci-tag">Shneiderman Rule 3</span> Every action (click, success, error, retry) produces instant visual feedback</div>
+          <div class="mt4"><span class="hci-tag">Shneiderman Rule 4</span> Success notification + log entry together confirm full task closure</div>
+          <div class="mt4"><span class="hci-tag">Shneiderman Rule 5</span> Client-side validation prevents out-of-range commands reaching the API</div>
+          <div class="mt4"><span class="hci-tag">Shneiderman Rule 6</span> Reset button allows reversal — inputs can be cleared</div>
+          <div class="mt4"><span class="hci-tag">Shneiderman Rule 7</span> Role badge always visible — user always knows their permission level</div>
+          <div class="mt4"><span class="hci-tag">Shneiderman Rule 8</span> Log paginated — dashboard minimal, no cognitive overload</div>
+          <div class="mt4"><span class="hci-tag">Norman: Visibility</span> Viewer gets "Read-Only" block — no mystery buttons</div>
+          <div class="mt4"><span class="hci-tag">Norman: Error Design</span> Every error state shows recovery path, not just a red box</div>
+          <div class="mt4"><span class="hci-tag">Norman: Mapping</span> Battery bar fills left-to-right — matches mental model of "filling up"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div style="background:#c0c0c0; border-top:2px solid #999; padding:8px 16px; font-size:10px; color:#555; text-align:center;">
+  CMP9134 Software Engineering — Assessment 1 Wireframe &nbsp;|&nbsp;
+  Student: toptech5419 &nbsp;|&nbsp; Week 6 Workshop Task 1 &nbsp;|&nbsp;
+  All screens: greyscale only — layout &amp; flow focus, no final styling
 </div>
 
 </body>
