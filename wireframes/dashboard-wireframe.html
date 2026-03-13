@@ -102,6 +102,19 @@
     /* ── Side-by-side comparison ── */
     .compare    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .compare-lbl { background: #c4c4c4; border: 1px solid #aaa; padding: 4px 8px; font-size: 11px; font-weight: bold; text-align: center; border-radius: 3px 3px 0 0; margin-bottom: -2px; }
+
+    /* ── Persistent status bar (AI feedback fix #1) ── */
+    .status-bar { background: #b8b8b8; border-bottom: 2px solid #999; padding: 5px 14px; display: flex; align-items: center; gap: 12px; font-size: 11px; flex-wrap: wrap; }
+    .status-bar .s-item { display: flex; align-items: center; gap: 4px; padding: 3px 8px; background: #d0d0d0; border: 1px solid #aaa; border-radius: 3px; }
+    .status-bar .s-label { color: #666; font-size: 10px; }
+    .status-bar .s-val { font-weight: bold; font-size: 11px; }
+    .status-bar .s-estop { margin-left: auto; background: #aaa; border: 2.5px solid #555; border-radius: 4px; padding: 4px 16px; font-weight: bold; font-size: 12px; cursor: default; }
+    .status-bar .s-estop-note { font-size: 9px; color: #666; font-style: italic; }
+
+    /* ── Command lifecycle badge ── */
+    .cmd-lifecycle { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+    .cmd-lifecycle .stage { font-size: 10px; padding: 2px 6px; border: 1px solid #aaa; border-radius: 2px; background: #ccc; }
+    .cmd-lifecycle .stage.active { background: #aaa; font-weight: bold; border-color: #777; }
   </style>
 </head>
 <body>
@@ -191,6 +204,22 @@
       <span class="browser-url">localhost:3000/dashboard</span>
     </div>
 
+    <!-- PERSISTENT STATUS BAR (AI feedback fix: Issue 1 + Issue 2) -->
+    <div class="status-bar">
+      <div class="s-item"><span class="s-label">Connection</span><span class="s-val">● Connected</span></div>
+      <div class="s-item"><span class="s-label">RTT</span><span class="s-val">42ms</span></div>
+      <div class="s-item"><span class="s-label">Battery</span><span class="s-val">72%</span></div>
+      <div class="s-item"><span class="s-label">Status</span><span class="s-val">IDLE</span></div>
+      <div class="s-item"><span class="s-label">Role</span><span class="s-val">COMMANDER</span></div>
+      <div class="s-estop">⛔ E-STOP</div>
+    </div>
+    <p class="anno" style="padding:2px 14px;">
+      <span class="hci-tag">AI Feedback Fix — Issue 1 &amp; 2</span>
+      Persistent bar: connection + battery + role always visible.
+      E-STOP fixed here (single consistent location across ALL screens).
+      <span class="hci-tag">Shneiderman Rule 7</span> User always knows system state at a glance.
+    </p>
+
     <!-- NAVBAR -->
     <nav class="navbar">
       <span class="logo">⬛ RMS GCS</span>
@@ -204,9 +233,6 @@
         <div class="btn sm">Logout</div>
       </div>
     </nav>
-    <p class="anno" style="padding:2px 14px;">
-      <span class="hci-tag">Norman: Visibility</span> Role badge always in navbar — user always knows their permission level
-    </p>
 
     <!-- BODY: 3-column layout -->
     <div style="display:grid; grid-template-columns:200px 1fr 220px; gap:8px; padding:10px 14px; min-height:460px;">
@@ -238,11 +264,32 @@
 
       <!-- CENTER: MAP + LOG -->
       <div class="flex col gap8">
-        <div class="lbl">2D Grid Map — 21 × 21</div>
-        <div class="grid-map" style="width:100%; padding-bottom:100%; max-width:340px; position:relative; margin:0 auto;">
-          <div class="robot-dot" style="top:40%; left:52%;"></div>
+        <div class="lbl">2D Grid Map — 21 × 21 (AI feedback fix: Issue 3 — axis labels added)</div>
+        <!-- Axis labels wrapper -->
+        <div style="display:inline-flex; flex-direction:column; align-items:flex-start; max-width:360px; width:100%; margin:0 auto;">
+          <!-- X-axis label -->
+          <div style="width:100%; text-align:center; font-size:10px; color:#666; padding-left:18px; margin-bottom:2px;">
+            X axis → &nbsp; 0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 10 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 15 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 20
+          </div>
+          <div style="display:flex; width:100%;">
+            <!-- Y-axis label -->
+            <div style="writing-mode:vertical-rl; transform:rotate(180deg); font-size:10px; color:#666; margin-right:2px; text-align:center;">
+              Y axis ↑ &nbsp; 0…20
+            </div>
+            <div class="grid-map" style="flex:1; padding-bottom:calc(100% - 18px); position:relative;">
+              <div class="robot-dot" style="top:40%; left:52%;"></div>
+              <!-- Target marker -->
+              <div style="position:absolute; width:12px; height:12px; border: 2px dashed #444; border-radius:50%; top:30%; left:65%; transform:translate(-50%,-50%); font-size:8px; text-align:center; line-height:12px; color:#444;">T</div>
+            </div>
+          </div>
+          <div style="font-size:9px; color:#888; margin-top:3px; padding-left:18px;">
+            ● = Robot (10,7) &nbsp;|&nbsp; T = Target (move destination) &nbsp;|&nbsp; ■ = Obstacle
+          </div>
         </div>
-        <p class="anno center">Robot position (10, 7) shown as filled circle. Obstacles = dark cells.</p>
+        <p class="anno center">
+          <span class="hci-tag">AI Feedback Fix — Issue 3</span>
+          Grid now has X/Y axis labels + scale (0–20) + legend. Target marker shows move destination.
+        </p>
 
         <div class="lbl mt8">Mission Audit Log — Last 5 Entries</div>
         <div class="box-dash" style="padding:6px;">
@@ -276,9 +323,20 @@
             <span class="hci-tag">Fitts</span> Full-width large button
             <span class="hci-tag">Hick</span> 2 inputs only — no decision fatigue
           </p>
-          <div class="box-dash center" style="font-size:11px; padding:6px;">[ Feedback notification ]</div>
+          <!-- Command lifecycle feedback (AI feedback fix: Issue 1) -->
+          <div class="box-dash" style="padding:6px; font-size:11px;">
+            <div style="font-size:10px; color:#666; margin-bottom:4px;">Command status:</div>
+            <div class="cmd-lifecycle">
+              <div class="stage">Queued</div>
+              <div class="stage active">Accepted ✓</div>
+              <div class="stage">Executing…</div>
+              <div class="stage">Complete</div>
+            </div>
+          </div>
           <p class="anno">
-            <span class="hci-tag">Shneiderman Rule 3</span> Informative feedback on every action
+            <span class="hci-tag">AI Feedback Fix — Issue 1</span>
+            <span class="hci-tag">Shneiderman Rule 3 &amp; 4</span>
+            Command lifecycle shown: Queued → Accepted → Executing → Complete/Failed
           </p>
         </div>
 
@@ -292,11 +350,10 @@
 
         <hr class="divider">
 
-        <div class="lbl">Emergency</div>
-        <div class="btn xl">⛔ E-STOP</div>
-        <p class="anno center">
-          <span class="hci-tag">Fitts</span> Largest button — always at bottom-right, fixed position
-        </p>
+        <div class="box-dash center" style="padding:6px; font-size:10px; color:#666; font-style:italic;">
+          ⛔ E-STOP moved to persistent status bar above<br>
+          (always visible, single fixed location — AI feedback fix: Issue 2)
+        </div>
       </div>
 
     </div><!-- end 3-col -->
