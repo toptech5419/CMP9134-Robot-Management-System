@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GCS Dashboard — Low-Fidelity Wireframe</title>
+  <style>
+    /* ── Wireframe palette: greys only, no real colours ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      color: #222;
+      font-size: 13px;
+    }
+
+    /* ── Wireframe annotation style ── */
+    .label {
+      font-size: 10px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .box {
+      background: #d9d9d9;
+      border: 1.5px solid #aaa;
+      border-radius: 3px;
+      padding: 8px 10px;
+    }
+    .box-outline {
+      background: #f9f9f9;
+      border: 1.5px dashed #aaa;
+      border-radius: 3px;
+      padding: 8px 10px;
+    }
+    .placeholder {
+      background: #bbb;
+      border-radius: 2px;
+      height: 12px;
+      margin: 4px 0;
+    }
+    .placeholder.short { width: 40%; }
+    .placeholder.medium { width: 65%; }
+    .placeholder.full   { width: 100%; }
+
+    /* ── Page title ── */
+    .wireframe-title {
+      text-align: center;
+      padding: 10px;
+      background: #ccc;
+      border-bottom: 2px solid #999;
+      font-weight: bold;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    /* ════════════════════════════════
+       SECTION 1 — MAIN DASHBOARD
+    ════════════════════════════════ */
+    .section-header {
+      background: #bbb;
+      padding: 6px 16px;
+      font-weight: bold;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #333;
+      border-top: 2px solid #999;
+      border-bottom: 1px solid #aaa;
+    }
+
+    /* NAV BAR */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #c8c8c8;
+      border-bottom: 2px solid #999;
+      padding: 8px 16px;
+      height: 44px;
+    }
+    .navbar .logo { font-weight: bold; font-size: 14px; color: #333; }
+    .navbar .role-badge {
+      background: #aaa;
+      border: 1.5px solid #888;
+      border-radius: 12px;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+    .navbar .nav-right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn-wire {
+      background: #c0c0c0;
+      border: 1.5px solid #888;
+      border-radius: 3px;
+      padding: 5px 12px;
+      font-size: 12px;
+      cursor: default;
+    }
+    .btn-wire.large {
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .btn-wire.estop {
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: bold;
+      background: #a0a0a0;
+      border: 3px solid #666;
+      border-radius: 6px;
+    }
+
+    /* MAIN CONTENT GRID */
+    .dashboard-body {
+      display: grid;
+      grid-template-columns: 220px 1fr 230px;
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+      padding: 10px 16px;
+      min-height: 520px;
+    }
+
+    /* LEFT — STATUS PANEL */
+    .status-panel {
+      grid-column: 1;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .status-card { padding: 10px; }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #bbb;
+      padding: 5px 0;
+      font-size: 12px;
+    }
+    .status-row:last-child { border-bottom: none; }
+    .status-val {
+      background: #bbb;
+      border-radius: 2px;
+      padding: 2px 8px;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    .battery-bar-wrap {
+      background: #bbb;
+      border-radius: 2px;
+      height: 10px;
+      width: 100%;
+      margin-top: 4px;
+    }
+    .battery-bar-fill {
+      background: #888;
+      height: 100%;
+      width: 72%;
+      border-radius: 2px;
+    }
+
+    /* CENTER — MAP */
+    .map-panel {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .grid-area {
+      aspect-ratio: 1;
+      width: 100%;
+      max-width: 360px;
+      background: repeating-linear-gradient(
+        #ccc 0px, #ccc 1px, transparent 1px, transparent 17px),
+        repeating-linear-gradient(
+        90deg, #ccc 0px, #ccc 1px, transparent 1px, transparent 17px);
+      background-color: #e0e0e0;
+      border: 2px solid #aaa;
+      border-radius: 3px;
+      position: relative;
+      margin: 0 auto;
+    }
+    .robot-marker {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: #777;
+      border: 2px solid #444;
+      border-radius: 50%;
+      top: 40%;
+      left: 55%;
+      transform: translate(-50%, -50%);
+    }
+    .fitts-note {
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* BOTTOM CENTER — AUDIT LOG */
+    .log-panel {
+      grid-column: 2;
+      grid-row: 2;
+    }
+    .log-table { width: 100%; border-collapse: collapse; }
+    .log-table th, .log-table td {
+      border: 1px solid #bbb;
+      padding: 5px 8px;
+      text-align: left;
+      font-size: 11px;
+    }
+    .log-table th { background: #ccc; font-weight: bold; }
+    .log-table td .placeholder { margin: 0; height: 10px; }
+
+    /* RIGHT — CONTROL PANEL (Commander only) */
+    .control-panel {
+      grid-column: 3;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rbac-note {
+      background: #c8c8c8;
+      border: 1.5px dashed #888;
+      border-radius: 3px;
+      padding: 6px 8px;
+      font-size: 10px;
+      color: #555;
+      text-align: center;
+    }
+    .move-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin: 6px 0;
+    }
+    .input-wire {
+      background: #e0e0e0;
+      border: 1.5px solid #999;
+      border-radius: 3px;
+      height: 30px;
+      padding: 0 8px;
+      font-size: 12px;
+    }
+    .controls-center { text-align: center; }
+    .divider {
+      border: none;
+      border-top: 1px dashed #aaa;
+      margin: 6px 0;
+    }
+
+    /* ════════════════════════════════
+       SECTION 2 — MOVE ROBOT DEEP-DIVE
+    ════════════════════════════════ */
+    .deep-dive-wrap {
+      padding: 10px 16px;
+    }
+    .deep-dive-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .step-num {
+      background: #aaa;
+      color: #333;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+    .step-content { flex: 1; }
+    .feedback-box {
+      border: 1.5px dashed #999;
+      border-radius: 3px;
+      background: #e8e8e8;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+      color: #555;
+    }
+    .annotation {
+      font-size: 10px;
+      color: #888;
+      font-style: italic;
+      margin-top: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wireframe-title">
+  CMP9134 — Robot Management System &nbsp;|&nbsp; Low-Fidelity Wireframe &nbsp;|&nbsp; Week 6
+</div>
+
+<!-- ═══════════════════════════════════════
+     SECTION 1: MAIN DASHBOARD VIEW
+═══════════════════════════════════════ -->
+<div class="section-header">[ 1 ] Main Dashboard View</div>
+
+<!-- NAV BAR -->
+<nav class="navbar">
+  <span class="logo">⬛ RMS GCS</span>
+  <div style="display:flex; gap:10px; align-items:center;">
+    <span class="role-badge">● COMMANDER</span>
+    <span class="label" style="margin:0;">username</span>
+  </div>
+  <div class="nav-right">
+    <div class="btn-wire">Dashboard</div>
+    <div class="btn-wire">Logs</div>
+    <div class="btn-wire">Admin</div>
+    <div class="btn-wire">Logout</div>
+  </div>
+</nav>
+<p class="annotation" style="padding:2px 16px;">
+  ↑ Role badge always visible — RBAC enforced: "VIEWER" role sees no control buttons
+</p>
+
+<!-- DASHBOARD BODY -->
+<div class="dashboard-body">
+
+  <!-- LEFT — STATUS PANEL -->
+  <aside class="status-panel">
+    <div class="label">Robot Status</div>
+    <div class="box status-card">
+      <div class="status-row">
+        <span>Status</span>
+        <span class="status-val">IDLE</span>
+      </div>
+      <div class="status-row">
+        <span>X Position</span>
+        <span class="status-val">10</span>
+      </div>
+      <div class="status-row">
+        <span>Y Position</span>
+        <span class="status-val">7</span>
+      </div>
+      <div class="status-row" style="flex-direction:column; align-items:flex-start;">
+        <span>Battery</span>
+        <div class="battery-bar-wrap">
+          <div class="battery-bar-fill"></div>
+        </div>
+        <span style="font-size:11px; margin-top:2px;">72%</span>
+      </div>
+    </div>
+
+    <div class="label">Connection</div>
+    <div class="box" style="text-align:center; padding:6px;">
+      <span style="font-size:11px;">● Connected — localhost:5000</span>
+    </div>
+
+    <div class="label">Active User</div>
+    <div class="box-outline" style="font-size:12px; text-align:center;">
+      <div>toptech5419</div>
+      <div style="font-weight:bold; margin-top:3px;">[ COMMANDER ]</div>
+    </div>
+  </aside>
+
+  <!-- CENTER — MAP -->
+  <main class="map-panel">
+    <div class="label">2D Grid Map (21 × 21)</div>
+    <div class="grid-area">
+      <div class="robot-marker" title="Robot position"></div>
+    </div>
+    <p class="fitts-note">Robot marker shows current (x, y) position. Obstacles shown as dark cells.</p>
+  </main>
+
+  <!-- CENTER BOTTOM — AUDIT LOG -->
+  <section class="log-panel">
+    <div class="label">Mission Audit Log (last 5 entries)</div>
+    <div class="box-outline" style="padding:6px;">
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td></tr>
+          <tr><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td></tr>
+          <tr><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td><td><div class="placeholder medium"></div></td><td><div class="placeholder short"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RIGHT — CONTROL PANEL -->
+  <aside class="control-panel">
+    <div class="rbac-note">
+      ⚠ Visible to COMMANDER only<br>VIEWER sees "Read-Only Mode" notice
+    </div>
+
+    <div class="label">Move Robot</div>
+    <div class="box">
+      <div class="move-inputs">
+        <div>
+          <div class="label">X (0–20)</div>
+          <div class="input-wire">___</div>
+        </div>
+        <div>
+          <div class="label">Y (0–20)</div>
+          <div class="input-wire">___</div>
+        </div>
+      </div>
+      <div class="controls-center">
+        <div class="btn-wire large" style="width:100%; margin-top:4px;">▶ MOVE</div>
+      </div>
+      <p class="annotation">Fitts's Law: large button, full width</p>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="label">Quick Actions</div>
+    <div class="box" style="display:flex; flex-direction:column; gap:6px;">
+      <div class="btn-wire" style="text-align:center;">↺ Reset Robot</div>
+      <div class="btn-wire" style="text-align:center;">📡 Refresh Status</div>
+    </div>
+
+    <hr class="divider" />
+
+    <div class="label">Emergency</div>
+    <div class="controls-center">
+      <div class="btn-wire estop">⛔ E-STOP</div>
+    </div>
+    <p class="annotation" style="text-align:center;">
+      Fitts's Law: largest button, bottom-right<br>always reachable
+    </p>
+  </aside>
+
+</div><!-- end dashboard-body -->
+
+
+<!-- ═══════════════════════════════════════
+     SECTION 2: DEEP-DIVE — MOVE ROBOT
+═══════════════════════════════════════ -->
+<div class="section-header">[ 2 ] Deep-Dive Feature: Move Robot — Interaction Sequence</div>
+
+<div class="deep-dive-wrap">
+  <div class="deep-dive-grid">
+
+    <!-- LEFT — Interaction steps -->
+    <div>
+      <div class="label">User Interaction Flow</div>
+
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="box" style="padding:6px;">Commander enters X and Y coordinates in input fields</div>
+          <div class="annotation">Hick's Law: only 2 inputs, clear labels (0–20 range)</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="box" style="padding:6px;">Clicks large "▶ MOVE" button</div>
+          <div class="annotation">Fitts's Law: full-width, large target</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="box" style="padding:6px;">Loading spinner appears inside button</div>
+          <div class="annotation">Shneiderman Rule 3: informative feedback</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">4a</div>
+        <div class="step-content">
+          <div class="feedback-box">✔ Success — "Robot moving to (12, 9)"</div>
+          <div class="annotation">Norman: get mapping right — position echoed back</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">4b</div>
+        <div class="step-content">
+          <div class="feedback-box">✖ Error — "Invalid coordinates. Must be 0–20"</div>
+          <div class="annotation">Shneiderman Rule 5: simple error handling</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="box" style="padding:6px;">Status panel auto-updates with new X, Y, Status</div>
+          <div class="annotation">Shneiderman Rule 4: closure — user knows task is done</div>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <div class="box" style="padding:6px;">Audit log row appended with timestamp + result</div>
+          <div class="annotation">GDPR / assessment brief: every command logged</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT — Zoomed Move Panel -->
+    <div>
+      <div class="label">Zoomed: Move Robot Panel (Commander view)</div>
+      <div class="box" style="max-width:260px; padding:14px;">
+
+        <div style="font-weight:bold; font-size:13px; margin-bottom:10px; text-align:center;">
+          Move Robot
+        </div>
+
+        <div class="move-inputs">
+          <div>
+            <div class="label">X Position (0–20)</div>
+            <div class="input-wire" style="background:#e8e8e8;">12</div>
+          </div>
+          <div>
+            <div class="label">Y Position (0–20)</div>
+            <div class="input-wire" style="background:#e8e8e8;">9</div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px; text-align:center;">
+          <div class="btn-wire large" style="width:100%;">▶ MOVE</div>
+        </div>
+
+        <div style="margin-top:8px;">
+          <div class="feedback-box">[ Feedback notification area ]</div>
+        </div>
+
+        <hr class="divider" style="margin:12px 0;" />
+
+        <div style="text-align:center;">
+          <div class="btn-wire estop" style="width:100%;">⛔ EMERGENCY STOP</div>
+        </div>
+        <p class="annotation" style="text-align:center; margin-top:4px;">
+          Always visible — never hidden behind scrolling
+        </p>
+
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="label">HCI Laws Applied</div>
+        <div class="box-outline" style="padding:8px; font-size:11px;">
+          <p>• <strong>Fitts's Law</strong>: MOVE + E-STOP are the two largest buttons on the page. E-STOP is always fixed in view.</p>
+          <p style="margin-top:4px;">• <strong>Hick's Law</strong>: Only 2 inputs in the Move panel — no decision fatigue.</p>
+          <p style="margin-top:4px;">• <strong>Shneiderman Rule 3</strong>: Every action (click, success, error) produces immediate visual feedback.</p>
+          <p style="margin-top:4px;">• <strong>Shneiderman Rule 6</strong>: Inputs can be cleared; future implementation adds undo for reset.</p>
+          <p style="margin-top:4px;">• <strong>Norman (Visibility)</strong>: Controls visible only to authorised roles — VIEWER sees a "Read-Only" notice instead.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
